@@ -11,6 +11,7 @@ import{
     ratelimiteMiddleware,
     morganMiddleware
 } from '../middleware/middlewares.js';
+import router from '../routes/routes.js';
 
 //carregar variaveis do aruivo .env
 
@@ -37,6 +38,10 @@ app.use(securityMiddleware);
 app.use(compressionMiddleware);
 app.use(ratelimiteMiddleware);
 app.use(morganMiddleware);
+
+//rotas
+app.use(router);
+
 
 // const mongoose = require("mongoose")
 
