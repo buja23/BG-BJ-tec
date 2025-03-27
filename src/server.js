@@ -21,7 +21,7 @@ const app = express();
 const port = process.env.PORT;
 
 app.get("/", (req, res) =>{
-    res.sendFile(path.join(__dirname, 'view', 'index.html'));
+    res.sendFile(path.join(__dirname, 'view', 'cadrastrarProdutos.html'));
 })
 
 app.listen(port, () => {
