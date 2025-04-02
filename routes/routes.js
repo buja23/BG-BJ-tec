@@ -4,12 +4,20 @@
  const router = express.Router();
 
 //Funçoes
-    router.get("/", controle.getControle);
 
-    router.post("/", controle.postControle);
+ // get todos os produtos
+    router.get('/Produtos', ProdutoController.getAllProdutos);
 
-    router.put("/", controle.putControle);
+ // get por ID
+    router.get('/Produtos/:id', ProdutoController.getProdutoById);
 
-    router.delete("/", controle.deleteControle);
+ // POST novo produto - form
+    router.post('/Produtos', ProdutoController.createProduto);
+
+// put atualizar produto por ID
+    router.put('/Produtos/:id', ProdutoController.updateProduto);
+
+//delete produto por id
+    router.delete('/Produtos/:id', ProdutoController.deleteProduto);
 
     export default router;
