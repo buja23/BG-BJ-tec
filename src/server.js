@@ -23,11 +23,10 @@ const port = process.env.PORT
 
 // Configurar o EJS como template engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', path.join(__dirname, 'views'));
+console.log(__dirname)
 
-app.get("/", (req, res) =>{
-    res.sendFile(path.join(__dirname, 'views', 'VisualizarProdutos.ejs'));
-})
+
 
 //registrando middlewares
 app.use(staticMiddleware);

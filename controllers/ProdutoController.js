@@ -87,7 +87,7 @@ class ProdutoController{
     //renders da pagina web
     static async renderCreateProduto(req, res){
         try{
-            res.sendFile(path.join(__dirname, 'views', 'cadrastrarProdutos.html'));
+            res.sendFile(path.join(__dirname, 'views', 'CadastrarProdutos.html'));
         } catch(error){
             console.error('erro ao carregar a pagina', error);
             res.status(500).json({message:'Erro interno'});

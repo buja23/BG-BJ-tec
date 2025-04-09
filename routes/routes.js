@@ -8,20 +8,22 @@
  // get todos os produtos
     router.get('/Produtos', controle.getAllProdutos);
 
- // get por ID
+    
+    // get por ID
     router.get('/Produtos/:id', controle.getProdutoById);
-
- // POST novo produto - form
+    
+    // POST novo produto - form
     router.post('/Produtos', controle.createProduto);
-
-// put atualizar produto por ID
+    
+    // put atualizar produto por ID
     router.put('/Produtos/:id', controle.updateProduto);
-
-//delete produto por id
+    
+    //delete produto por id
     router.delete('/Produtos/:id', controle.deleteProduto);
 
-    
-   router.get('/produtos', controle.renderAllProdutos);
+    router.get('/ProdutosCad', controle.renderCreateProduto);
+
+    router.get('/ProdutosVisu', controle.renderAllProdutos);
 
 
     export default router;
