@@ -20,5 +20,8 @@
 //delete produto por id
     router.delete('/Produtos/:id', controle.deleteProduto);
 
+    
+   router.get('/produtos', controle.renderAllProdutos);
+
 
     export default router;
