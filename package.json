@@ -1,5 +1,5 @@
 {
-  "name": "BG-BJ-tec",
+  "name": "bgbjtec",
   "version": "1.0.0",
   "type": "module",
   "main": "src/server.js",
@@ -9,10 +9,12 @@
   "dependencies": {
     "compression": "^1.8.0",
     "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.1.0",
-    "mongoose": "^8.13.1",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.2",
     "morgan": "^1.10.0"
   }
 }

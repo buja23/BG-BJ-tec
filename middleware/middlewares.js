@@ -22,6 +22,7 @@ const ratelimiteMiddleware = ratelimit({
     message: 'Você excedeu o limite de requisições, tente novamente em 10 minutos.'
 });
 
+
 const logFile = fs.createWriteStream(path.join(__dirname, 'logs', 'access.log'), { flags: 'a' });
 const morganMiddleware = morgan('combined', { stream: logFile });
 
@@ -34,3 +35,6 @@ export{
     ratelimiteMiddleware,
     morganMiddleware
 }
+
+
+
