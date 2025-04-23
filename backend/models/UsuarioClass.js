@@ -8,6 +8,7 @@ class Usuario {
     this.cargo = null; // definido na subclasse
   }
 
+  //aa
   async save() {
     const doc = new UsuarioModel({
       nome:  this.nome,
