@@ -11,7 +11,7 @@ import{
     ratelimiteMiddleware,
     morganMiddleware
 } from '../middleware/middlewares.js';
-import router from '../routes/routes.js';
+import router from '../routes/usuarioRoutes.js';
 import connectDB  from '../db.js';
 
 dotenv.config();

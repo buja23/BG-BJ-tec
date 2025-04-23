@@ -1,5 +1,6 @@
 import produtoModel from './ProdutoSchema.js';
 
+
 class Produto {
     constructor(nome, preco) {
         this.nome = nome;
