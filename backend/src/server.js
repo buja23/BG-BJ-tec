@@ -11,21 +11,15 @@ import{
     ratelimiteMiddleware,
     morganMiddleware
 } from '../middleware/middlewares.js';
-import router from '../routes/usuarioRoutes.js';
 import connectDB  from '../db.js';
+import usuarioRoutes from '../routes/produtoRoutes.js';
+import produtoRoutes from '../routes/usuarioRoutes.js';
 
 dotenv.config();
-
 connectDB();
 
 const app = express();
 const port = process.env.PORT
-
-// Configurar o EJS como template engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-console.log(__dirname)
-
 
 
 //registrando middlewares
@@ -37,8 +31,8 @@ app.use(urlencodedMiddleware);
 app.use(morganMiddleware);
 app.use(jsonMiddleware);
 
-//rotas
-app.use(router);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/produtos', produtoRoutes);
 
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
