@@ -5,7 +5,8 @@ import {
   fetchProdutos,
   createProduto
 } from '../services/produtoService';
-import ListaProdutos from '../components/ListaProdutos';
+import ListaProdutos from '../components/ListarProdutos';
+
 
 export default function Home() {
   const [nome, setNome]   = useState('');

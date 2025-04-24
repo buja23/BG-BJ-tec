@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchProdutos } from '../services/api';
+import { fetchProdutos } from '../services/produtoService.js';
 
 export default function ListaProdutos() {
   const [produtos, setProdutos] = useState([]);
