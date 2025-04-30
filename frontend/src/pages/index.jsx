@@ -8,6 +8,8 @@ import {
   createProduto
 } from '../services/produtoService';
 import ListaProdutos from '../components/ListarProdutos';
+import api from '../services/api';
+
 
 
 export default function Home() {
@@ -28,13 +30,14 @@ export default function Home() {
     try {
       const novo = await createProduto({ nome, preco: parseFloat(preco) });
       setProdutos(prev => [...prev, novo]);
+      alert('Produto cadastrado com sucesso!');
       setNome('');
       setPreco('');
     } catch (err) {
       console.error('Erro ao criar produto:', err);
     }
   };
-
+  
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto' }}>
       <h1>Cadastro de Produtos</h1>

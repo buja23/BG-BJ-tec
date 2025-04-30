@@ -20,6 +20,7 @@ connectDB();
 
 const app = express();
 const port = process.env.PORT
+const cors = require('cors');
 
 
 //registrando middlewares
@@ -33,6 +34,8 @@ app.use(jsonMiddleware);
 
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/produtos', produtoRoutes);
+// backend (Node.js + Express)
+app.use(cors());
 
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);

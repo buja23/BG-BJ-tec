@@ -2,12 +2,14 @@
 
 cd backend
 npm install
+npm install mongoose
 
 cd frontend
 npm install
 npm run dev
+npm install axios
 
-npm install mongoose
+
 
 npm install helmet compression express-rate-limit morgan
 

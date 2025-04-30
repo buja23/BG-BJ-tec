@@ -1,16 +1,21 @@
 // src/services/produtoService.js
+import axios from 'axios';
 
 // URL base da API de produtos
 const API_BASE = 'http://localhost:3000/api/produtos';
+
+// Instância do axios
+const api = axios.create({
+  baseURL: API_BASE
+});
 
 /**
  * Busca todos os produtos.
  * @returns {Promise<Array>} Array de objetos { _id, nome, preco }.
  */
 export async function fetchProdutos() {
-  const res = await fetch(API_BASE);
-  if (!res.ok) throw new Error('Erro ao buscar produtos');
-  return await res.json();
+  const { data } = await api.get('/produtos');
+  return data;
 }
 
 /**
@@ -30,13 +35,8 @@ export async function fetchProdutoPorId(id) {
  * @returns {Promise<Object>} Produto criado (com _id).
  */
 export async function createProduto(produto) {
-  const res = await fetch(API_BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(produto)
-  });
-  if (!res.ok) throw new Error('Erro ao criar produto');
-  return await res.json();
+  const { data } = await api.post('/produtos', produto);
+  return data;
 }
 
 /**

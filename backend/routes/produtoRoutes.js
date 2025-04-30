@@ -6,24 +6,24 @@
 //Funçoes
 
  // get todos os produtos
-    router.get('/Produtos', controle.getAllProdutos);
+    router.get('/produtos', controle.getAllProdutos);
 
     
     // get por ID
-    router.get('/Produtos/:id', controle.getProdutoById);
+    router.get('/produtos/:id', controle.getProdutoById);
     
     // POST novo produto - form
-    router.post('/Produtos', controle.createProduto);
+    router.post('/produtos', controle.createProduto);
     
     // put atualizar produto por ID
-    router.put('/Produtos/:id', controle.updateProduto);
+    router.put('/produtos/:id', controle.updateProduto);
     
     //delete produto por id
-    router.delete('/Produtos/:id', controle.deleteProduto);
+    router.delete('/produtos/:id', controle.deleteProduto);
 
-    router.get('/ProdutosCad', controle.renderCreateProduto);
+    router.get('/produtosCad', controle.renderCreateProduto);
 
-    router.get('/ProdutosVisu', controle.renderAllProdutos);
+    router.get('/produtosVisu', controle.renderAllProdutos);
 
 
     export default router;
