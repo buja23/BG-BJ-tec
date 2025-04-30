@@ -39,35 +39,11 @@
         "chunks": [],
         "async": false
       }
-    },
-    "(app-client)/./layout/layout.tsx": {
-      "*": {
-        "id": "(sc_client)/./layout/layout.tsx",
-        "name": "*",
-        "chunks": [],
-        "async": false
-      }
-    },
-    "(app-client)/./app/(main)/page.tsx": {
-      "*": {
-        "id": "(sc_client)/./app/(main)/page.tsx",
-        "name": "*",
-        "chunks": [],
-        "async": false
-      }
-    },
-    "(app-client)/./app/layout.tsx": {
-      "*": {
-        "id": "(sc_client)/./app/layout.tsx",
-        "name": "*",
-        "chunks": [],
-        "async": false
-      }
     }
   },
   "edgeSSRModuleMapping": {},
   "clientModules": {
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\error-boundary.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\error-boundary.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/error-boundary.js",
       "name": "*",
       "chunks": [
@@ -75,7 +51,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\error-boundary.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\error-boundary.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/error-boundary.js",
       "name": "*",
       "chunks": [
@@ -83,7 +59,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\app-router.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\app-router.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/app-router.js",
       "name": "*",
       "chunks": [
@@ -91,7 +67,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\app-router.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\app-router.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/app-router.js",
       "name": "*",
       "chunks": [
@@ -99,7 +75,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\layout-router.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\layout-router.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/layout-router.js",
       "name": "*",
       "chunks": [
@@ -107,7 +83,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\layout-router.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\layout-router.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/layout-router.js",
       "name": "*",
       "chunks": [
@@ -115,7 +91,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\render-from-template-context.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\render-from-template-context.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/render-from-template-context.js",
       "name": "*",
       "chunks": [
@@ -123,7 +99,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\render-from-template-context.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\render-from-template-context.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/render-from-template-context.js",
       "name": "*",
       "chunks": [
@@ -131,7 +107,7 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\static-generation-searchparams-bailout-provider.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\client\\components\\static-generation-searchparams-bailout-provider.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/static-generation-searchparams-bailout-provider.js",
       "name": "*",
       "chunks": [
@@ -139,44 +115,14 @@
       ],
       "async": false
     },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\static-generation-searchparams-bailout-provider.js": {
+    "C:\\Users\\mathe\\OneDrive\\Área de Trabalho\\BG-BJ-tec\\node_modules\\next\\dist\\esm\\client\\components\\static-generation-searchparams-bailout-provider.js": {
       "id": "(app-client)/./node_modules/next/dist/client/components/static-generation-searchparams-bailout-provider.js",
       "name": "*",
       "chunks": [
         "app-client-internals:static/chunks/app-client-internals.js"
-      ],
-      "async": false
-    },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\layout\\layout.tsx": {
-      "id": "(app-client)/./layout/layout.tsx",
-      "name": "*",
-      "chunks": [
-        "app/(main)/layout:static/chunks/app/(main)/layout.js"
-      ],
-      "async": false
-    },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\app\\(main)\\page.tsx": {
-      "id": "(app-client)/./app/(main)/page.tsx",
-      "name": "*",
-      "chunks": [
-        "app/(main)/page:static/chunks/app/(main)/page.js"
-      ],
-      "async": false
-    },
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\app\\layout.tsx": {
-      "id": "(app-client)/./app/layout.tsx",
-      "name": "*",
-      "chunks": [
-        "app/layout:static/chunks/app/layout.js"
       ],
       "async": false
     }
   },
-  "entryCSSFiles": {
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\app\\(main)\\layout": [],
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\app\\(main)\\page": [],
-    "C:\\Users\\joojs\\Desktop\\BGBJ\\BG-BJ-tec\\app\\layout": [
-      "static/css/app/layout.css"
-    ]
-  }
+  "entryCSSFiles": {}
 }

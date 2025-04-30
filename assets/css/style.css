@@ -9,7 +9,7 @@
 /* Cores do ChefControl */
 :root {
     --primary-dark: #2D1B14;  /* Marrom escuro */
-    --primary-orange: #D35400; /* Laranja forte */
+    --primary-orange: #2D1B14;; /* Laranja forte */
     --secondary-red: #A12E1B;  /* Vermelho queimado */
     --text-white: #FFFFFF;     /* Branco */
 }

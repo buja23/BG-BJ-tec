@@ -1,10 +1,13 @@
 # BG-BJ-tec
 
-npm install express
+cd backend
+npm install
+
+cd frontend
+npm install
+npm run dev
 
 npm install mongoose
-
-npm install mongodb
 
 npm install helmet compression express-rate-limit morgan
 

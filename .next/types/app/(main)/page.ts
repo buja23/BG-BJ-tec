@@ -1,4 +1,4 @@
-// File: C:\Users\joojs\Desktop\BGBJ\BG-BJ-tec\app\(main)\page.tsx
+// File: C:\Users\mathe\OneDrive\Área de Trabalho\BG-BJ-tec\app\(main)\page.tsx
 import * as entry from '../../../../app/(main)/page.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
