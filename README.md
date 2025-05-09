@@ -5,6 +5,7 @@ npm install
 
 cd frontend
 npm install
+npm install antd
 npm run dev
 
 npm install mongoose
