@@ -6,8 +6,8 @@ npm install mongoose
 
 cd frontend
 npm install
-npm run dev
 npm install axios
+npm run dev
 
 
 

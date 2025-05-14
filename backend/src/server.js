@@ -14,13 +14,14 @@ import{
 import connectDB  from '../db.js';
 import usuarioRoutes from '../routes/produtoRoutes.js';
 import produtoRoutes from '../routes/usuarioRoutes.js';
+import cors from 'cors';
 
 dotenv.config();
 connectDB();
 
 const app = express();
 const port = process.env.PORT
-const cors = require('cors');
+
 
 
 //registrando middlewares
