@@ -1,17 +1,13 @@
-import mongoose from "mongoose";
+// ProdutoSchema.js
+import mongoose from 'mongoose';
 
 const produtoSchema = new mongoose.Schema({
-    nome: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    preco: {
-        type: Number,
-        required: true
-    }
-}, { timestamps: true });
+  cod: { type: String, required: true },
+  nome: { type: String, required: true },
+  preco: { type: Number, required: true },
+  tipo: { type: String, required: true },
+  qtd: { type: Number, required: true }
+});
 
-const Produto = mongoose.model('Produto', produtoSchema);
-
-export default Produto;
+const produtoModel = mongoose.model('Produto', produtoSchema);
+export default produtoModel;
