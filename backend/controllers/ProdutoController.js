@@ -1,6 +1,7 @@
 import path from 'path';
 import __dirname from '../utils/pathUtils.js';
 import Produto from '../models/Produtos.js';
+import { ProdutoFactory } from '../factories/ProdutoFactory.js'; // certifique-se do caminho
 
 class ProdutoController{
     
@@ -30,22 +31,29 @@ class ProdutoController{
     }
 
     static async createProduto(req, res) {
-  try {
-    const { cod, nome, preco, tipo, qtd } = req.body;
-
-    const produtoExistente = await Produto.findByNome(nome);
-    if (produtoExistente) {
-      return res.status(400).json({ message: 'Já existe um produto com esse nome' });
+      try {
+        const { cod, nome, preco, tipo, qtd } = req.body;
+    
+        const produtoExistente = await Produto.findByNome(nome);
+        if (produtoExistente) {
+          return res.status(400).json({ message: 'Já existe um produto com esse nome' });
+        }
+    
+        const novoProduto = ProdutoFactory.criarProduto(tipo, {
+          cod,
+          nome,
+          preco,
+          tipo,
+          qtd
+        });
+    
+        const salvo = await novoProduto.save();
+        res.status(201).json(salvo);
+      } catch (error) {
+        console.error('Erro ao cadastrar o produto:', error);
+        res.status(500).json({ message: 'Erro interno ao cadastrar o produto' });
+      }
     }
-
-    const novoProduto = new Produto({ cod, nome, preco, tipo, qtd });
-    const salvo = await novoProduto.save();
-    res.status(201).json(salvo);
-  } catch (error) {
-    console.error('Erro ao cadastrar o produto:', error);
-    res.status(500).json({ message: 'Erro interno ao cadastrar o produto' });
-  }
-}
 
     
    static async updateProduto(req, res) {

@@ -1,15 +1,13 @@
-import { useState, useEffect } from 'react';
-import {
-  fetchProdutos,
-  createProduto
-} from '../services/produtoService';
-import ListaProdutos from '../components/ListarProdutos';
+import { useState, useEffect } from "react";
+import { fetchProdutos, createProduto } from "../services/produtoService";
+import ListaProdutos from "../components/ListarProdutos"; // Certifique-se do nome estar correto
+import { ProdutoFactory } from "../../../backend/factories/ProdutoFactory"; // ajuste o caminho conforme necessário
 
 export default function Home() {
   const [cod, setCod] = useState('');
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
-  const [tipo, setTipo] = useState('comida'); // valor inicial
+  const [tipo, setTipo] = useState('comida');
   const [qtd, setQtd] = useState('');
   const [produtos, setProdutos] = useState([]);
 
@@ -24,33 +22,32 @@ export default function Home() {
 
   const gerarCod = (lista) => {
     const ultimoCod = lista.length ? parseInt(lista[lista.length - 1].cod) : 0;
-    const novoCod = (ultimoCod + 1).toString().padStart(4, '0'); // exemplo: 0001, 0002
+    const novoCod = (ultimoCod + 1).toString().padStart(4, '0');
     setCod(novoCod);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const novo = await createProduto({
-        cod,
-        nome,
-        preco: parseFloat(preco),
-        tipo,
-        qtd: parseInt(qtd)
-      });
+      const produto = ProdutoFactory.criarProduto(tipo);
+      produto.cod = cod;
+      produto.nome = nome;
+      produto.preco = parseFloat(preco);
+      produto.qtd = parseInt(qtd);
+
+      const novo = await createProduto(produto);
 
       const novaLista = [...produtos, novo];
       setProdutos(novaLista);
-      alert('Produto cadastrado com sucesso!');
+      alert("Produto cadastrado com sucesso!");
 
-      // Limpa os campos e gera novo código
       setNome('');
       setPreco('');
       setTipo('comida');
       setQtd('');
       gerarCod(novaLista);
     } catch (err) {
-      console.error('Erro ao criar produto:', err);
+      console.error("Erro ao criar produto:", err);
     }
   };
 
@@ -62,7 +59,7 @@ export default function Home() {
           type="text"
           placeholder="Código"
           value={cod}
-          disabled // impede edição
+          disabled
         />
         <input
           type="text"
@@ -81,7 +78,11 @@ export default function Home() {
         />
         <select value={tipo} onChange={e => setTipo(e.target.value)} required>
           <option value="comida">Comida</option>
-          <option value="bebida">Bebida</option>
+          <option value="refrigerante">Refrigerante</option>
+          <option value="sorvete">Sorvete</option>
+          <option value="cerveja">Cerveja</option>
+          <option value="dose">Dose</option>
+          <option value="drink">Drink</option>
         </select>
         <input
           type="number"

@@ -38,4 +38,5 @@ class Produto {
   }
 }
 
-export default Produto;
+export { Produto }; // <== isso resolve
+

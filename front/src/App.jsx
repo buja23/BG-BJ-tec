@@ -1,5 +1,5 @@
 // src/App.jsx
-import Index from './pages/Home';
+import Index from './pages/index';
 
 function App() {
   return (
