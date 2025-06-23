@@ -18,6 +18,6 @@ class ProdutoFactory {
                 throw new Error(`Tipo de produto desconhecido: ${tipo}`);
         }
     }
-}
+}//feito
 
 export default ProdutoFactory;
