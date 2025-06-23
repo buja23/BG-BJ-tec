@@ -80,8 +80,10 @@ export default function Home() {
           required
         />
         <select value={tipo} onChange={e => setTipo(e.target.value)} required>
-          <option value="comida">Comida</option>
+          <option value="lanche">lanche</option>
           <option value="bebida">Bebida</option>
+          <option value="sobremesa">Sobremesa</option>
+          <option value="porcao">Porção</option>
         </select>
         <input
           type="number"

@@ -1,10 +1,12 @@
 // src/App.jsx
-import Index from './pages/Home';
+import Home from './pages/Home';
+import Index from './pages/index';
 
 function App() {
   return (
     <div>
       <Index />
+      <Home />
     </div>
   );
 }
