@@ -1,6 +1,6 @@
 /* CODIGO INDEX.JSX */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Card, Statistic, Table, Tag, Space, Button, Modal, Form, Input, DatePicker, Select } from 'antd';
 import {
   ShopOutlined,
@@ -15,6 +15,10 @@ import {
   BarChartOutlined,
   LogoutOutlined
 } from '@ant-design/icons';
+import {
+  fetchProdutos,
+  createProduto
+} from '../services/produtoService';
 
 const { Header, Content, Sider } = Layout;
 const { Option } = Select;
@@ -27,7 +31,55 @@ const AdminDashboard = () => {
   const [caixaAberto, setCaixaAberto] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
-  
+
+  //ESTOQUE PRODUTOS
+  const [cod, setCod] = useState('');
+  const [nome, setNome] = useState('');
+  const [preco, setPreco] = useState('');
+  const [tipo, setTipo] = useState('comida');
+  const [qtd, setQtd] = useState('');
+  const [produtos, setProdutos] = useState([]);
+
+   useEffect(() => {
+    fetchProdutos()
+      .then(produtos => {
+        setProdutos(produtos);
+        gerarCod(produtos);
+      })
+      .catch(err => console.error('Erro ao buscar produtos:', err));
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      const novo = await createProduto({
+        cod,
+        nome,
+        preco: parseFloat(preco),
+        tipo,
+        qtd: parseInt(qtd)
+      });
+      const novaLista = [...produtos, novo];
+      setProdutos(novaLista);
+      alert('Produto cadastrado com sucesso!');
+      setNome('');
+      setPreco('');
+      setTipo('comida');
+      setQtd('');
+      gerarCod(novaLista);
+      setModalVisible(false);
+    } catch (err) {
+      console.error('Erro ao criar produto:', err);
+    }
+  };
+
+
+  const gerarCod = (lista) => {
+    const ultimoCod = lista.length ? parseInt(lista[lista.length - 1].cod) : 0;
+    const novoCod = (ultimoCod + 1).toString().padStart(4, '0');
+    setCod(novoCod);
+  };
+
+
   // Dados de exemplo
   const historicoCaixa = [
     { key: '1', data: '10/05/2023', valorInicial: 150.00, valorFinal: 1850.00, responsavel: 'João Silva' },
@@ -59,10 +111,7 @@ const AdminDashboard = () => {
     { key: '2', funcionario: 'Maria Souza', atendimentos: 18, valorTotal: 2850.00 },
   ];
 
-  const produtosEstoque = [
-    { key: '1', produto: 'Cerveja Artesanal', categoria: 'Bebidas', quantidade: 50, valorUnitario: 12.00 },
-    { key: '2', produto: 'Pizza Margherita', categoria: 'Alimentos', quantidade: 30, valorUnitario: 45.00 },
-  ];
+
 
   const financeiroResumo = {
     receitaMes: 25000.00,
@@ -242,14 +291,23 @@ const AdminDashboard = () => {
         return (
           <Card 
             title="Controle de Estoque" 
-            extra={<Button type="primary" onClick={() => setModalType('novoProduto') && setModalVisible(true)}>Novo Produto</Button>}
+            extra=
+            {
+            <Button 
+            type="primary" 
+            onClick={() => {
+              setModalType('novoProduto');
+              setModalVisible(true);
+              }}>
+              Novo Produto</Button>}
           >
             <Table 
               columns={[
-                { title: 'Produto', dataIndex: 'produto', key: 'produto' },
-                { title: 'Categoria', dataIndex: 'categoria', key: 'categoria' },
-                { title: 'Quantidade', dataIndex: 'quantidade', key: 'quantidade' },
-                { title: 'Valor Unitário', dataIndex: 'valorUnitario', key: 'valorUnitario', render: val => `R$ ${val.toFixed(2)}` },
+                { title: 'Código', dataIndex: 'cod', key: 'cod' },
+                { title: 'Produto', dataIndex: 'nome', key: 'nome' },
+                { title: 'Categoria', dataIndex: 'tipo', key: 'tipo' },
+                { title: 'Quantidade', dataIndex: 'qtd', key: 'qtd' },
+                { title: 'Valor Unitário', dataIndex: 'preco', key: 'preco', render: val => `R$ ${val.toFixed(2)}` },
                 { 
                   title: 'Ações', 
                   key: 'actions', 
@@ -261,7 +319,7 @@ const AdminDashboard = () => {
                   )
                 },
               ]}
-              dataSource={produtosEstoque}
+             dataSource={produtos.map((p, i) => ({ ...p, key: i }))}
             />
           </Card>
         );
@@ -390,30 +448,31 @@ const AdminDashboard = () => {
         );
       
       case 'novoProduto':
-        return (
-          <Form layout="vertical">
-            <Form.Item label="Nome do Produto" required>
-              <Input />
+       return (
+          <Form layout="vertical" onFinish={handleSubmit}>
+            <Form.Item label="Código">
+              <Input value={cod} disabled />
             </Form.Item>
-            <Form.Item label="Categoria" required>
-              <Select>
-                <Option value="bebidas">Bebidas</Option>
-                <Option value="alimentos">Alimentos</Option>
-                <Option value="outros">Outros</Option>
+            <Form.Item label="Nome" rules={[{ required: true }]}> 
+              <Input value={nome} onChange={e => setNome(e.target.value)} />
+            </Form.Item>
+            <Form.Item label="Preço" rules={[{ required: true }]}> 
+              <Input value={preco} onChange={e => setPreco(e.target.value)} type="number" step="0.01" prefix="R$" />
+            </Form.Item>
+            <Form.Item label="Tipo" rules={[{ required: true }]}> 
+              <Select value={tipo} onChange={value => setTipo(value)}>
+                <Option value="lanche">Lanche</Option>
+                <Option value="bebida">Bebida</Option>
+                <Option value="sobremesa">Sobremesa</Option>
+                <Option value="porcao">Porção</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Quantidade Inicial" required>
-              <Input type="number" />
+            <Form.Item label="Quantidade" rules={[{ required: true }]}> 
+              <Input value={qtd} onChange={e => setQtd(e.target.value)} type="number" />
             </Form.Item>
-            <Form.Item label="Valor Unitário" required>
-              <Input prefix="R$" type="number" />
-            </Form.Item>
-            <Form.Item label="Descrição">
-              <TextArea rows={3} />
-            </Form.Item>
+            <Button type="primary" htmlType="submit">Cadastrar</Button>
           </Form>
         );
-      
       default:
         return null;
     }
@@ -427,6 +486,7 @@ const AdminDashboard = () => {
     }
     setModalVisible(false);
   };
+
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -481,6 +541,7 @@ const AdminDashboard = () => {
         </Content>
       </Layout>
       
+      
       <Modal
         title={
           modalType === 'abrirCaixa' ? 'Abrir Caixa' :
@@ -498,5 +559,6 @@ const AdminDashboard = () => {
     </Layout>
   );
 };
+
 
 export default AdminDashboard;
