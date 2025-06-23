@@ -34,11 +34,9 @@ const AdminDashboard = () => {
 
   //ESTOQUE PRODUTOS
   const [cod, setCod] = useState('');
-  const [nome, setNome] = useState('');
-  const [preco, setPreco] = useState('');
-  const [tipo, setTipo] = useState('comida');
-  const [qtd, setQtd] = useState('');
   const [produtos, setProdutos] = useState([]);
+
+  const [form] = Form.useForm();
 
    useEffect(() => {
     fetchProdutos()
@@ -49,22 +47,21 @@ const AdminDashboard = () => {
       .catch(err => console.error('Erro ao buscar produtos:', err));
   }, []);
 
-  const handleSubmit = async () => {
+
+const handleSubmit = async () => {
     try {
+      const values = await form.validateFields();
       const novo = await createProduto({
         cod,
-        nome,
-        preco: parseFloat(preco),
-        tipo,
-        qtd: parseInt(qtd)
+        nome: values.nome,
+        preco: parseFloat(values.preco),
+        tipo: values.tipo,
+        qtd: parseInt(values.qtd)
       });
       const novaLista = [...produtos, novo];
       setProdutos(novaLista);
       alert('Produto cadastrado com sucesso!');
-      setNome('');
-      setPreco('');
-      setTipo('comida');
-      setQtd('');
+      form.resetFields();
       gerarCod(novaLista);
       setModalVisible(false);
     } catch (err) {
@@ -449,26 +446,26 @@ const AdminDashboard = () => {
       
       case 'novoProduto':
        return (
-          <Form layout="vertical" onFinish={handleSubmit}>
+          <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{ tipo: 'comida' }}>
             <Form.Item label="Código">
               <Input value={cod} disabled />
             </Form.Item>
-            <Form.Item label="Nome" rules={[{ required: true }]}> 
-              <Input value={nome} onChange={e => setNome(e.target.value)} />
+            <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}> 
+              <Input />
             </Form.Item>
-            <Form.Item label="Preço" rules={[{ required: true }]}> 
-              <Input value={preco} onChange={e => setPreco(e.target.value)} type="number" step="0.01" prefix="R$" />
+            <Form.Item name="preco" label="Preço" rules={[{ required: true, message: 'Informe o preço' }]}> 
+              <Input type="number" step="0.01" prefix="R$" />
             </Form.Item>
-            <Form.Item label="Tipo" rules={[{ required: true }]}> 
-              <Select value={tipo} onChange={value => setTipo(value)}>
+            <Form.Item name="tipo" label="Tipo" rules={[{ required: true, message: 'Selecione o tipo' }]}> 
+              <Select>
                 <Option value="lanche">Lanche</Option>
                 <Option value="bebida">Bebida</Option>
                 <Option value="sobremesa">Sobremesa</Option>
                 <Option value="porcao">Porção</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Quantidade" rules={[{ required: true }]}> 
-              <Input value={qtd} onChange={e => setQtd(e.target.value)} type="number" />
+            <Form.Item name="qtd" label="Quantidade" rules={[{ required: true, message: 'Informe a quantidade' }]}> 
+              <Input type="number" />
             </Form.Item>
             <Button type="primary" htmlType="submit">Cadastrar</Button>
           </Form>
@@ -550,8 +547,9 @@ const AdminDashboard = () => {
           modalType === 'novoProduto' ? 'Novo Produto' : ''
         }
         visible={modalVisible}
-        onOk={handleModalOk}
+        onOk={modalType === 'novoProduto' ? form.submit : handleModalOk}
         onCancel={() => setModalVisible(false)}
+        footer={null}
         width={600}
       >
         {renderModal()}
