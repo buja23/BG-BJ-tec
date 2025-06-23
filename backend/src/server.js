@@ -18,7 +18,7 @@ import produtoRoutes from '../routes/produtoRoutes.js';
 import usuarioRoutes from '../routes/usuarioRoutes.js';
 
 dotenv.config();
-connectDB();
+await connectDB();
 
 const app = express();
 const port = process.env.PORT || 3000;
