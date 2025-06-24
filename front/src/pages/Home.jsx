@@ -1,6 +1,6 @@
 /* CODIGO INDEX.JSX */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Card, Statistic, Table, Tag, Space, Button, Modal, Form, Input, DatePicker, Select } from 'antd';
 import {
   ShopOutlined,
@@ -15,6 +15,10 @@ import {
   BarChartOutlined,
   LogoutOutlined
 } from '@ant-design/icons';
+import {
+  fetchProdutos,
+  createProduto
+} from '../services/produtoService';
 
 const { Header, Content, Sider } = Layout;
 const { Option } = Select;
@@ -27,22 +31,73 @@ const AdminDashboard = () => {
   const [caixaAberto, setCaixaAberto] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
-  
+
+  // MESAS
+  const [mesaSelecionada, setMesaSelecionada] = useState(null);
+  const [produtoMesa, setProdutoMesa] = useState({ produtoId: '', qtd: 1 });
+
+  //ESTOQUE PRODUTOS
+  const [cod, setCod] = useState('');
+  const [produtos, setProdutos] = useState([]);
+
+  const [form] = Form.useForm();
+
+   useEffect(() => {
+    fetchProdutos()
+      .then(produtos => {
+        setProdutos(produtos);
+        gerarCod(produtos);
+      })
+      .catch(err => console.error('Erro ao buscar produtos:', err));
+  }, []);
+
+
+const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      const novo = await createProduto({
+        cod,
+        nome: values.nome,
+        preco: parseFloat(values.preco),
+        tipo: values.tipo,
+        qtd: parseInt(values.qtd)
+      });
+      const novaLista = [...produtos, novo];
+      setProdutos(novaLista);
+      alert('Produto cadastrado com sucesso!');
+      form.resetFields();
+      gerarCod(novaLista);
+      setModalVisible(false);
+    } catch (err) {
+      console.error('Erro ao criar produto:', err);
+    }
+  };
+
+
+  const gerarCod = (lista) => {
+    const ultimoCod = lista.length ? parseInt(lista[lista.length - 1].cod) : 0;
+    const novoCod = (ultimoCod + 1).toString().padStart(4, '0');
+    setCod(novoCod);
+  };
+
+
   // Dados de exemplo
   const historicoCaixa = [
     { key: '1', data: '10/05/2023', valorInicial: 150.00, valorFinal: 1850.00, responsavel: 'João Silva' },
     { key: '2', data: '09/05/2023', valorInicial: 150.00, valorFinal: 2200.00, responsavel: 'Maria Souza' },
   ];
 
-  const mesasAbertas = [
-    { key: '1', mesa: 'Mesa 1', cliente: 'Cliente A', valor: 120.50, tempo: '45 min' },
-    { key: '2', mesa: 'Mesa 3', cliente: 'Cliente B', valor: 85.00, tempo: '30 min' },
-  ];
+  // Dados simulados das mesas abertas e fechadas (só pra exemplo)
+const [mesasAbertas, setMesasAbertas] = useState([
+  { key: '1', mesa: 'Mesa 1', cliente: 'Lucas', valor: 45.00, tempo: '10 min' },
+  { key: '2', mesa: 'Mesa 2', cliente: 'Ana', valor: 72.50, tempo: '20 min' },
+]);
 
-  const mesasFechadas = [
-    { key: '1', mesa: 'Mesa 2', cliente: 'Cliente C', valor: 210.00, data: '10/05/2023 14:30' },
-    { key: '2', mesa: 'Mesa 4', cliente: 'Cliente D', valor: 175.50, data: '10/05/2023 13:15' },
-  ];
+const [mesasFechadas, setMesasFechadas] = useState([
+  { key: '3', mesa: 'Mesa 3', cliente: 'Carlos', valor: 100.00, data: '22/06/2025 20:30' },
+  { key: '4', mesa: 'Mesa 4', cliente: 'Paula', valor: 80.00, data: '22/06/2025 19:10' },
+]);
+
 
   const deliverys = [
     { key: '1', pedido: '#1001', cliente: 'Cliente E', endereco: 'Rua A, 123', valor: 95.00, status: 'Em preparo' },
@@ -59,10 +114,7 @@ const AdminDashboard = () => {
     { key: '2', funcionario: 'Maria Souza', atendimentos: 18, valorTotal: 2850.00 },
   ];
 
-  const produtosEstoque = [
-    { key: '1', produto: 'Cerveja Artesanal', categoria: 'Bebidas', quantidade: 50, valorUnitario: 12.00 },
-    { key: '2', produto: 'Pizza Margherita', categoria: 'Alimentos', quantidade: 30, valorUnitario: 45.00 },
-  ];
+
 
   const financeiroResumo = {
     receitaMes: 25000.00,
@@ -119,26 +171,26 @@ const AdminDashboard = () => {
         return (
           <div>
             <Card title="Mesas em Aberto" style={{ marginBottom: 20 }}>
-              <Table 
-                columns={[
-                  { title: 'Mesa', dataIndex: 'mesa', key: 'mesa' },
-                  { title: 'Cliente', dataIndex: 'cliente', key: 'cliente' },
-                  { title: 'Valor', dataIndex: 'valor', key: 'valor', render: val => `R$ ${val.toFixed(2)}` },
-                  { title: 'Tempo', dataIndex: 'tempo', key: 'tempo' },
-                  { 
-                    title: 'Ações', 
-                    key: 'actions', 
-                    render: () => (
-                      <Space size="middle">
-                        <Button type="primary" size="small">Detalhes</Button>
-                        <Button type="primary" danger size="small">Fechar</Button>
-                      </Space>
-                    )
-                  },
-                ]}
-                dataSource={mesasAbertas}
-              />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                {mesasAbertas.map(mesa => (
+                  <Card
+                    key={mesa.key}
+                    title={mesa.mesa}
+                    extra={<span>{mesa.tempo}</span>}
+                    style={{ width: 200, cursor: 'pointer' }}
+                    onClick={() => {
+                      setMesaSelecionada(mesa);
+                      setModalType('adicionarProdutoMesa');
+                      setModalVisible(true);
+                    }}
+                  >
+                    <p><strong>Cliente:</strong> {mesa.cliente}</p>
+                    <p><strong>Total:</strong> R$ {mesa.valor.toFixed(2)}</p>
+                  </Card>
+                ))}
+              </div>
             </Card>
+
             
             <Card title="Mesas Fechadas">
               <Table 
@@ -242,14 +294,23 @@ const AdminDashboard = () => {
         return (
           <Card 
             title="Controle de Estoque" 
-            extra={<Button type="primary" onClick={() => setModalType('novoProduto') && setModalVisible(true)}>Novo Produto</Button>}
+            extra=
+            {
+            <Button 
+            type="primary" 
+            onClick={() => {
+              setModalType('novoProduto');
+              setModalVisible(true);
+              }}>
+              Novo Produto</Button>}
           >
             <Table 
               columns={[
-                { title: 'Produto', dataIndex: 'produto', key: 'produto' },
-                { title: 'Categoria', dataIndex: 'categoria', key: 'categoria' },
-                { title: 'Quantidade', dataIndex: 'quantidade', key: 'quantidade' },
-                { title: 'Valor Unitário', dataIndex: 'valorUnitario', key: 'valorUnitario', render: val => `R$ ${val.toFixed(2)}` },
+                { title: 'Código', dataIndex: 'cod', key: 'cod' },
+                { title: 'Produto', dataIndex: 'nome', key: 'nome' },
+                { title: 'Categoria', dataIndex: 'tipo', key: 'tipo' },
+                { title: 'Quantidade', dataIndex: 'qtd', key: 'qtd' },
+                { title: 'Valor Unitário', dataIndex: 'preco', key: 'preco', render: val => `R$ ${val.toFixed(2)}` },
                 { 
                   title: 'Ações', 
                   key: 'actions', 
@@ -261,7 +322,7 @@ const AdminDashboard = () => {
                   )
                 },
               ]}
-              dataSource={produtosEstoque}
+             dataSource={produtos.map((p, i) => ({ ...p, key: i }))}
             />
           </Card>
         );
@@ -388,32 +449,63 @@ const AdminDashboard = () => {
             </Form.Item>
           </Form>
         );
+
+        case 'adicionarProdutoMesa':
+  return (
+    <Form layout="vertical" onFinish={() => {
+      console.log('Produto adicionado:', produtoMesa, 'para a mesa:', mesaSelecionada);
+      setModalVisible(false);
+      setProdutoMesa({ produtoId: '', qtd: 1 }); // reset
+    }}>
+      <Form.Item label="Produto">
+        <Select
+          value={produtoMesa.produtoId}
+          onChange={(value) => setProdutoMesa(prev => ({ ...prev, produtoId: value }))}
+        >
+          {produtos.map(prod => (
+            <Option key={prod.cod} value={prod.cod}>{prod.nome} - R$ {prod.preco.toFixed(2)}</Option>
+          ))}
+        </Select>
+      </Form.Item>
+      <Form.Item label="Quantidade">
+        <Input
+          type="number"
+          min={1}
+          value={produtoMesa.qtd}
+          onChange={(e) => setProdutoMesa(prev => ({ ...prev, qtd: parseInt(e.target.value) || 1 }))}
+        />
+      </Form.Item>
+      <Button type="primary" htmlType="submit">Adicionar à Mesa</Button>
+    </Form>
+  );
+
       
       case 'novoProduto':
-        return (
-          <Form layout="vertical">
-            <Form.Item label="Nome do Produto" required>
+       return (
+          <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{ tipo: 'comida' }}>
+            <Form.Item label="Código">
+              <Input value={cod} disabled />
+            </Form.Item>
+            <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}> 
               <Input />
             </Form.Item>
-            <Form.Item label="Categoria" required>
+            <Form.Item name="preco" label="Preço" rules={[{ required: true, message: 'Informe o preço' }]}> 
+              <Input type="number" step="0.01" prefix="R$" />
+            </Form.Item>
+            <Form.Item name="tipo" label="Tipo" rules={[{ required: true, message: 'Selecione o tipo' }]}> 
               <Select>
-                <Option value="bebidas">Bebidas</Option>
-                <Option value="alimentos">Alimentos</Option>
-                <Option value="outros">Outros</Option>
+                <Option value="lanche">Lanche</Option>
+                <Option value="bebida">Bebida</Option>
+                <Option value="sobremesa">Sobremesa</Option>
+                <Option value="porcao">Porção</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Quantidade Inicial" required>
+            <Form.Item name="qtd" label="Quantidade" rules={[{ required: true, message: 'Informe a quantidade' }]}> 
               <Input type="number" />
             </Form.Item>
-            <Form.Item label="Valor Unitário" required>
-              <Input prefix="R$" type="number" />
-            </Form.Item>
-            <Form.Item label="Descrição">
-              <TextArea rows={3} />
-            </Form.Item>
+            <Button type="primary" htmlType="submit">Cadastrar</Button>
           </Form>
         );
-      
       default:
         return null;
     }
@@ -427,6 +519,7 @@ const AdminDashboard = () => {
     }
     setModalVisible(false);
   };
+
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -481,6 +574,7 @@ const AdminDashboard = () => {
         </Content>
       </Layout>
       
+      
       <Modal
         title={
           modalType === 'abrirCaixa' ? 'Abrir Caixa' :
@@ -489,8 +583,9 @@ const AdminDashboard = () => {
           modalType === 'novoProduto' ? 'Novo Produto' : ''
         }
         visible={modalVisible}
-        onOk={handleModalOk}
+        onOk={modalType === 'novoProduto' ? form.submit : handleModalOk}
         onCancel={() => setModalVisible(false)}
+        footer={null}
         width={600}
       >
         {renderModal()}
@@ -498,5 +593,6 @@ const AdminDashboard = () => {
     </Layout>
   );
 };
+
 
 export default AdminDashboard;
