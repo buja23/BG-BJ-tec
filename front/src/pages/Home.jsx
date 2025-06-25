@@ -375,6 +375,7 @@ const handleSubmit = async () => {
                   setModalVisible(true);
                   produtoForm.resetFields();
                   setProdutoSelecionado(null);
+                  gerarCod(produtos);
                 }}>
                 Novo Produto
               </Button>
@@ -398,19 +399,27 @@ const handleSubmit = async () => {
                         setModalVisible(true);
                         setTimeout(() => produtoForm.setFieldsValue(record), 0);
                       }}>Editar</Button>
-                      <Button type="primary" danger size="small" onClick={async () => {
-                        Modal.confirm({
-                          title: 'Excluir Produto',
-                          content: `Tem certeza que deseja excluir ${record.nome}?`,
-                          okText: 'Sim',
-                          okType: 'danger',
-                          cancelText: 'Não',
-                          onOk: async () => {
-                            await deleteProduto(record.cod);
-                            setProdutos(prev => prev.filter(p => p.cod !== record.cod));
-                          }
-                        });
-                      }}>Excluir</Button>
+                      <Button
+                        type="primary"
+                        danger
+                        size="small"
+                        onClick={() => {
+                          Modal.confirm({
+                            title: 'Excluir Produto',
+                            content: `Tem certeza que deseja excluir ${record.nome}?`,
+                            okText: 'Sim',
+                            okType: 'danger',
+                            cancelText: 'Não',
+                            onOk: () => {
+                              return deleteProduto(record.cod)
+                                .then(() => setProdutos(prev => prev.filter(p => p.cod !== record.cod)))
+                                .catch(() => Modal.error({ title: 'Erro', content: 'Não foi possível excluir o produto.' }));
+                            }
+                          });
+                        }}
+                      >
+                        Excluir
+                      </Button>
                     </Space>
                   )
                 },
