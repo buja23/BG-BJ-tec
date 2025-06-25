@@ -17,15 +17,19 @@ import {
 } from '@ant-design/icons';
 import {
   fetchProdutos,
-  createProduto
+  createProduto,
+  updateProduto,
+  deleteProduto
 } from '../services/produtoService';
+import { updateUsuario, deleteUsuario, createUsuario, fetchUsuarios } from '../services/usuarioService';
+import { fetchMesas, abrirMesa, adicionarProdutoMesa, fecharMesa, detalharMesa, removerMesa } from '../services/mesaService';
 
 const { Header, Content, Sider } = Layout;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
-const AdminDashboard = () => {
+const Home = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState('caixa');
   const [caixaAberto, setCaixaAberto] = useState(false);
@@ -40,7 +44,20 @@ const AdminDashboard = () => {
   const [cod, setCod] = useState('');
   const [produtos, setProdutos] = useState([]);
 
+  // CLIENTES FUNCIONAIS
+  const [clientes, setClientes] = useState([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [clienteForm] = Form.useForm();
+
   const [form] = Form.useForm();
+
+  // PRODUTOS FUNCIONAIS
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [produtoForm] = Form.useForm();
+
+  // MESAS
+  const [mesasAbertas, setMesasAbertas] = useState([]);
+  const [mesasFechadas, setMesasFechadas] = useState([]);
 
    useEffect(() => {
     fetchProdutos()
@@ -49,6 +66,13 @@ const AdminDashboard = () => {
         gerarCod(produtos);
       })
       .catch(err => console.error('Erro ao buscar produtos:', err));
+    // Buscar clientes do backend
+    fetchUsuarios()
+      .then(clientes => setClientes(clientes))
+      .catch(err => console.error('Erro ao buscar clientes:', err));
+    // Buscar mesas do backend
+    fetchMesas('aberta').then(setMesasAbertas);
+    fetchMesas('fechada').then(setMesasFechadas);
   }, []);
 
 
@@ -88,25 +112,9 @@ const handleSubmit = async () => {
   ];
 
   // Dados simulados das mesas abertas e fechadas (só pra exemplo)
-const [mesasAbertas, setMesasAbertas] = useState([
-  { key: '1', mesa: 'Mesa 1', cliente: 'Lucas', valor: 45.00, tempo: '10 min' },
-  { key: '2', mesa: 'Mesa 2', cliente: 'Ana', valor: 72.50, tempo: '20 min' },
-]);
-
-const [mesasFechadas, setMesasFechadas] = useState([
-  { key: '3', mesa: 'Mesa 3', cliente: 'Carlos', valor: 100.00, data: '22/06/2025 20:30' },
-  { key: '4', mesa: 'Mesa 4', cliente: 'Paula', valor: 80.00, data: '22/06/2025 19:10' },
-]);
-
-
   const deliverys = [
     { key: '1', pedido: '#1001', cliente: 'Cliente E', endereco: 'Rua A, 123', valor: 95.00, status: 'Em preparo' },
     { key: '2', pedido: '#1002', cliente: 'Cliente F', endereco: 'Av. B, 456', valor: 65.50, status: 'Saiu para entrega' },
-  ];
-
-  const clientes = [
-    { key: '1', nome: 'Cliente A', telefone: '(11) 9999-9999', email: 'cliente@email.com', totalCompras: 5 },
-    { key: '2', nome: 'Cliente B', telefone: '(11) 8888-8888', email: 'cliente2@email.com', totalCompras: 3 },
   ];
 
   const rankingAtendimentos = [
@@ -170,22 +178,31 @@ const [mesasFechadas, setMesasFechadas] = useState([
       case 'mesas':
         return (
           <div>
-            <Card title="Mesas em Aberto" style={{ marginBottom: 20 }}>
+            <Card title="Mesas em Aberto" style={{ marginBottom: 20 }} extra={<Button type="primary" onClick={() => { setModalType('abrirMesa'); setModalVisible(true); abrirMesaForm.resetFields(); }}>Abrir Mesa</Button>}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
                 {mesasAbertas.map(mesa => (
                   <Card
-                    key={mesa.key}
+                    key={mesa._id}
                     title={mesa.mesa}
-                    extra={<span>{mesa.tempo}</span>}
-                    style={{ width: 200, cursor: 'pointer' }}
+                    extra={<span>{mesa.abertoEm ? new Date(mesa.abertoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span>}
+                    style={{ width: 220, cursor: 'pointer' }}
+                    actions={[
+                      <Button type="primary" size="small" danger onClick={async (e) => {
+                        e.stopPropagation();
+                        await fecharMesa(mesa._id);
+                        fetchMesas('aberta').then(setMesasAbertas);
+                        fetchMesas('fechada').then(setMesasFechadas);
+                      }}>Fechar Mesa</Button>
+                    ]}
                     onClick={() => {
                       setMesaSelecionada(mesa);
                       setModalType('adicionarProdutoMesa');
                       setModalVisible(true);
                     }}
                   >
-                    <p><strong>Cliente:</strong> {mesa.cliente}</p>
-                    <p><strong>Total:</strong> R$ {mesa.valor.toFixed(2)}</p>
+                    <p><strong>Cliente:</strong> {mesa.cliente?.nome || '-'}</p>
+                    <p><strong>Total:</strong> R$ {mesa.valorTotal?.toFixed(2) || '0,00'}</p>
+                    <p><strong>Produtos:</strong> {mesa.produtos?.length || 0}</p>
                   </Card>
                 ))}
               </div>
@@ -193,21 +210,38 @@ const [mesasFechadas, setMesasFechadas] = useState([
 
             
             <Card title="Mesas Fechadas">
-              <Table 
+              <Table
                 columns={[
                   { title: 'Mesa', dataIndex: 'mesa', key: 'mesa' },
-                  { title: 'Cliente', dataIndex: 'cliente', key: 'cliente' },
-                  { title: 'Valor', dataIndex: 'valor', key: 'valor', render: val => `R$ ${val.toFixed(2)}` },
-                  { title: 'Data/Hora', dataIndex: 'data', key: 'data' },
-                  { 
-                    title: 'Ações', 
-                    key: 'actions', 
-                    render: () => (
-                      <Button type="primary" size="small">Detalhes</Button>
+                  { title: 'Cliente', dataIndex: ['cliente', 'nome'], key: 'cliente', render: (val, rec) => rec.cliente?.nome || '-' },
+                  { title: 'Valor', dataIndex: 'valorTotal', key: 'valor', render: val => `R$ ${(val||0).toFixed(2)}` },
+                  { title: 'Data/Hora', dataIndex: 'fechadoEm', key: 'data', render: val => val ? new Date(val).toLocaleString('pt-BR') : '-' },
+                  {
+                    title: 'Ações',
+                    key: 'actions',
+                    render: (_, record) => (
+                      <Button type="primary" size="small" onClick={() => {
+                        Modal.info({
+                          title: `Detalhes da Mesa ${record.mesa}`,
+                          content: (
+                            <div>
+                              <p><strong>Cliente:</strong> {record.cliente?.nome || '-'}</p>
+                              <p><strong>Produtos:</strong></p>
+                              <ul>
+                                {record.produtos?.map((p, i) => (
+                                  <li key={i}>{p.nome} x{p.qtd} - R$ {(p.preco * p.qtd).toFixed(2)}</li>
+                                ))}
+                              </ul>
+                              <p><strong>Total:</strong> R$ {record.valorTotal?.toFixed(2)}</p>
+                              <p><strong>Fechada em:</strong> {record.fechadoEm ? new Date(record.fechadoEm).toLocaleString('pt-BR') : '-'}</p>
+                            </div>
+                          ),
+                        });
+                      }}>Detalhes</Button>
                     )
                   },
                 ]}
-                dataSource={mesasFechadas}
+                dataSource={mesasFechadas.map(m => ({ ...m, key: m._id }))}
               />
             </Card>
           </div>
@@ -252,7 +286,7 @@ const [mesasFechadas, setMesasFechadas] = useState([
         return (
           <Card 
             title="Lista de Clientes" 
-            extra={<Button type="primary" onClick={() => setModalType('novoCliente') && setModalVisible(true)}>Novo Cliente</Button>}
+            extra={<Button type="primary" onClick={() => { setModalType('novoCliente'); setModalVisible(true); clienteForm.resetFields(); setClienteSelecionado(null); }}>Novo Cliente</Button>}
           >
             <Table 
               columns={[
@@ -263,10 +297,27 @@ const [mesasFechadas, setMesasFechadas] = useState([
                 { 
                   title: 'Ações', 
                   key: 'actions', 
-                  render: () => (
+                  render: (_, record) => (
                     <Space size="middle">
-                      <Button type="primary" size="small">Editar</Button>
-                      <Button type="primary" danger size="small">Excluir</Button>
+                      <Button type="primary" size="small" onClick={() => {
+                        setClienteSelecionado(record);
+                        setModalType('editarCliente');
+                        setModalVisible(true);
+                        setTimeout(() => clienteForm.setFieldsValue(record), 0);
+                      }}>Editar</Button>
+                      <Button type="primary" danger size="small" onClick={async () => {
+                        Modal.confirm({
+                          title: 'Excluir Cliente',
+                          content: `Tem certeza que deseja excluir ${record.nome}?`,
+                          okText: 'Sim',
+                          okType: 'danger',
+                          cancelText: 'Não',
+                          onOk: async () => {
+                            await deleteUsuario(record.id);
+                            setClientes(prev => prev.filter(c => c.id !== record.id));
+                          }
+                        });
+                      }}>Excluir</Button>
                     </Space>
                   )
                 },
@@ -294,15 +345,18 @@ const [mesasFechadas, setMesasFechadas] = useState([
         return (
           <Card 
             title="Controle de Estoque" 
-            extra=
-            {
-            <Button 
-            type="primary" 
-            onClick={() => {
-              setModalType('novoProduto');
-              setModalVisible(true);
-              }}>
-              Novo Produto</Button>}
+            extra={
+              <Button 
+                type="primary" 
+                onClick={() => {
+                  setModalType('novoProduto');
+                  setModalVisible(true);
+                  produtoForm.resetFields();
+                  setProdutoSelecionado(null);
+                }}>
+                Novo Produto
+              </Button>
+            }
           >
             <Table 
               columns={[
@@ -314,15 +368,32 @@ const [mesasFechadas, setMesasFechadas] = useState([
                 { 
                   title: 'Ações', 
                   key: 'actions', 
-                  render: () => (
+                  render: (_, record) => (
                     <Space size="middle">
-                      <Button type="primary" size="small">Editar</Button>
-                      <Button type="primary" danger size="small">Excluir</Button>
+                      <Button type="primary" size="small" onClick={() => {
+                        setProdutoSelecionado(record);
+                        setModalType('editarProduto');
+                        setModalVisible(true);
+                        setTimeout(() => produtoForm.setFieldsValue(record), 0);
+                      }}>Editar</Button>
+                      <Button type="primary" danger size="small" onClick={async () => {
+                        Modal.confirm({
+                          title: 'Excluir Produto',
+                          content: `Tem certeza que deseja excluir ${record.nome}?`,
+                          okText: 'Sim',
+                          okType: 'danger',
+                          cancelText: 'Não',
+                          onOk: async () => {
+                            await deleteProduto(record.cod);
+                            setProdutos(prev => prev.filter(p => p.cod !== record.cod));
+                          }
+                        });
+                      }}>Excluir</Button>
                     </Space>
                   )
                 },
               ]}
-             dataSource={produtos.map((p, i) => ({ ...p, key: i }))}
+              dataSource={produtos.map((p, i) => ({ ...p, key: i }))}
             />
           </Card>
         );
@@ -400,6 +471,23 @@ const [mesasFechadas, setMesasFechadas] = useState([
     }
   };
 
+  // Função para abrir nova mesa
+  const [abrirMesaForm] = Form.useForm();
+  const handleAbrirMesa = async (values) => {
+    try {
+      // Cliente pode ser string (id) ou vazio
+      const payload = { mesa: values.mesa };
+      if (values.cliente) payload.cliente = values.cliente;
+      await abrirMesa(payload);
+      fetchMesas('aberta').then(setMesasAbertas);
+      abrirMesaForm.resetFields();
+      setModalVisible(false);
+      Modal.success({ title: 'Mesa aberta!', content: 'A mesa foi aberta com sucesso.' });
+    } catch (err) {
+      Modal.error({ title: 'Erro', content: 'Não foi possível abrir a mesa.' });
+    }
+  };
+
   const renderModal = () => {
     switch (modalType) {
       case 'abrirCaixa':
@@ -432,30 +520,65 @@ const [mesasFechadas, setMesasFechadas] = useState([
           </Form>
         );
       
-      case 'novoCliente':
+      case 'abrirMesa':
         return (
-          <Form layout="vertical">
-            <Form.Item label="Nome" required>
-              <Input />
+          <Form layout="vertical" form={abrirMesaForm} onFinish={handleAbrirMesa}>
+            <Form.Item name="mesa" label="Número/Nome da Mesa" rules={[{ required: true, message: 'Informe o número ou nome da mesa' }]}> 
+              <Input placeholder="Ex: 01, 02, VIP, etc." />
             </Form.Item>
-            <Form.Item label="Telefone" required>
-              <Input />
+            <Form.Item name="cliente" label="Cliente">
+              <Select allowClear placeholder="Selecione um cliente (opcional)">
+                {clientes.map(cliente => (
+                  <Option key={cliente.id || cliente._id} value={cliente.id || cliente._id}>{cliente.nome}</Option>
+                ))}
+              </Select>
             </Form.Item>
-            <Form.Item label="E-mail">
-              <Input type="email" />
-            </Form.Item>
-            <Form.Item label="Endereço">
-              <Input />
-            </Form.Item>
+            <Button type="primary" htmlType="submit">Abrir Mesa</Button>
+          </Form>
+        );
+      
+      case 'novoCliente':
+      case 'editarCliente':
+        return (
+          <Form layout="vertical" form={clienteForm} onFinish={async () => {
+            try {
+              const values = await clienteForm.validateFields();
+              if (modalType === 'novoCliente') {
+                const novo = await createUsuario({ ...values });
+                setClientes(prev => [...prev, novo]);
+              } else if (modalType === 'editarCliente' && clienteSelecionado) {
+                const atualizado = await updateUsuario(clienteSelecionado.id, values);
+                setClientes(prev => prev.map(c => c.id === clienteSelecionado.id ? atualizado : c));
+              }
+              setModalVisible(false);
+              setClienteSelecionado(null);
+              clienteForm.resetFields();
+            } catch (err) {}
+          }} initialValues={clienteSelecionado || {}}>
+            <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}> <Input /> </Form.Item>
+            <Form.Item name="telefone" label="Telefone" rules={[{ required: true, message: 'Informe o telefone' }]}> <Input /> </Form.Item>
+            <Form.Item name="email" label="E-mail"> <Input type="email" /> </Form.Item>
+            <Form.Item name="endereco" label="Endereço"> <Input /> </Form.Item>
+            <Button type="primary" htmlType="submit">Salvar</Button>
           </Form>
         );
 
         case 'adicionarProdutoMesa':
   return (
-    <Form layout="vertical" onFinish={() => {
-      console.log('Produto adicionado:', produtoMesa, 'para a mesa:', mesaSelecionada);
+    <Form layout="vertical" onFinish={async () => {
+      if (!produtoMesa.produtoId || !mesaSelecionada) return;
+      const produto = produtos.find(p => p.cod === produtoMesa.produtoId);
+      if (!produto) return;
+      await adicionarProdutoMesa(mesaSelecionada._id || mesaSelecionada.id || mesaSelecionada.key, {
+        produtoId: produto.cod,
+        nome: produto.nome,
+        preco: produto.preco,
+        qtd: produtoMesa.qtd
+      });
+      // Atualiza mesas abertas
+      fetchMesas('aberta').then(setMesasAbertas);
       setModalVisible(false);
-      setProdutoMesa({ produtoId: '', qtd: 1 }); // reset
+      setProdutoMesa({ produtoId: '', qtd: 1 });
     }}>
       <Form.Item label="Produto">
         <Select
@@ -481,8 +604,24 @@ const [mesasFechadas, setMesasFechadas] = useState([
 
       
       case 'novoProduto':
-       return (
-          <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={{ tipo: 'comida' }}>
+        return (
+          <Form layout="vertical" form={produtoForm} onFinish={async () => {
+            try {
+              const values = await produtoForm.validateFields();
+              const payload = {
+                cod: cod,
+                nome: values.nome,
+                preco: parseFloat(values.preco),
+                tipo: values.tipo,
+                qtd: parseInt(values.qtd)
+              };
+              const novo = await createProduto(payload);
+              setProdutos(prev => [...prev, novo]);
+              setModalVisible(false);
+              setProdutoSelecionado(null);
+              produtoForm.resetFields();
+            } catch (err) {}
+          }} initialValues={{ tipo: 'comida' }}>
             <Form.Item label="Código">
               <Input value={cod} disabled />
             </Form.Item>
@@ -503,7 +642,49 @@ const [mesasFechadas, setMesasFechadas] = useState([
             <Form.Item name="qtd" label="Quantidade" rules={[{ required: true, message: 'Informe a quantidade' }]}> 
               <Input type="number" />
             </Form.Item>
-            <Button type="primary" htmlType="submit">Cadastrar</Button>
+            <Button type="primary" htmlType="submit">Salvar</Button>
+          </Form>
+        );
+      case 'editarProduto':
+        return (
+          <Form layout="vertical" form={produtoForm} onFinish={async () => {
+            try {
+              const values = await produtoForm.validateFields();
+              const payload = {
+                cod: produtoSelecionado.cod,
+                nome: values.nome,
+                preco: parseFloat(values.preco),
+                tipo: values.tipo,
+                qtd: parseInt(values.qtd)
+              };
+              const atualizado = await updateProduto(produtoSelecionado.cod, payload);
+              setProdutos(prev => prev.map(p => p.cod === produtoSelecionado.cod ? atualizado : p));
+              setModalVisible(false);
+              setProdutoSelecionado(null);
+              produtoForm.resetFields();
+            } catch (err) {}
+          }} initialValues={produtoSelecionado}>
+            <Form.Item label="Código">
+              <Input value={produtoSelecionado?.cod || ''} disabled />
+            </Form.Item>
+            <Form.Item name="nome" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}> 
+              <Input />
+            </Form.Item>
+            <Form.Item name="preco" label="Preço" rules={[{ required: true, message: 'Informe o preço' }]}> 
+              <Input type="number" step="0.01" prefix="R$" />
+            </Form.Item>
+            <Form.Item name="tipo" label="Tipo" rules={[{ required: true, message: 'Selecione o tipo' }]}> 
+              <Select>
+                <Option value="lanche">Lanche</Option>
+                <Option value="bebida">Bebida</Option>
+                <Option value="sobremesa">Sobremesa</Option>
+                <Option value="porcao">Porção</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="qtd" label="Quantidade" rules={[{ required: true, message: 'Informe a quantidade' }]}> 
+              <Input type="number" />
+            </Form.Item>
+            <Button type="primary" htmlType="submit">Salvar</Button>
           </Form>
         );
       default:
@@ -518,6 +699,46 @@ const [mesasFechadas, setMesasFechadas] = useState([
       setCaixaAberto(false);
     }
     setModalVisible(false);
+  };
+
+
+  const handleEditarCliente = (cliente) => {
+    setClienteSelecionado(cliente);
+    setModalType('editarCliente');
+    setModalVisible(true);
+    setTimeout(() => {
+      clienteForm.setFieldsValue(cliente);
+    }, 0);
+  };
+
+  const handleExcluirCliente = (cliente) => {
+    Modal.confirm({
+      title: 'Excluir Cliente',
+      content: `Tem certeza que deseja excluir ${cliente.nome}?`,
+      okText: 'Sim',
+      okType: 'danger',
+      cancelText: 'Não',
+      onOk: () => {
+        setClientes(prev => prev.filter(c => c.key !== cliente.key));
+      }
+    });
+  };
+
+  const handleSalvarCliente = async () => {
+    try {
+      const values = await clienteForm.validateFields();
+      if (modalType === 'novoCliente') {
+        const novo = { ...values, key: Date.now().toString(), totalCompras: 0 };
+        setClientes(prev => [...prev, novo]);
+      } else if (modalType === 'editarCliente' && clienteSelecionado) {
+        setClientes(prev => prev.map(c => c.key === clienteSelecionado.key ? { ...c, ...values } : c));
+      }
+      setModalVisible(false);
+      setClienteSelecionado(null);
+      clienteForm.resetFields();
+    } catch (err) {
+      // erro de validação
+    }
   };
 
 
@@ -580,11 +801,22 @@ const [mesasFechadas, setMesasFechadas] = useState([
           modalType === 'abrirCaixa' ? 'Abrir Caixa' :
           modalType === 'fecharCaixa' ? 'Fechar Caixa' :
           modalType === 'novoCliente' ? 'Novo Cliente' :
-          modalType === 'novoProduto' ? 'Novo Produto' : ''
+          modalType === 'editarCliente' ? 'Editar Cliente' :
+          modalType === 'novoProduto' ? 'Novo Produto' :
+          modalType === 'editarProduto' ? 'Editar Produto' : ''
         }
         visible={modalVisible}
-        onOk={modalType === 'novoProduto' ? form.submit : handleModalOk}
-        onCancel={() => setModalVisible(false)}
+        onOk={
+          (modalType === 'abrirCaixa' || modalType === 'fecharCaixa') ? handleModalOk : undefined
+        }
+        onCancel={() => {
+          setModalVisible(false);
+          setProdutoSelecionado(null);
+          produtoForm.resetFields();
+          setClienteSelecionado(null);
+          clienteForm.resetFields();
+          abrirMesaForm.resetFields();
+        }}
         footer={null}
         width={600}
       >
@@ -595,4 +827,4 @@ const [mesasFechadas, setMesasFechadas] = useState([
 };
 
 
-export default AdminDashboard;
+export default Home;

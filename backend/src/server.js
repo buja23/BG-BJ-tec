@@ -16,6 +16,7 @@ import connectDB from '../db.js';
 
 import produtoRoutes from '../routes/produtoRoutes.js';
 import usuarioRoutes from '../routes/usuarioRoutes.js';
+import mesasRoutes from '../routes/mesasRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -37,6 +38,7 @@ app.use(jsonMiddleware);
 // 3) Rotas da API em primeiro lugar
 app.use('/api/produtos', produtoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/mesas', mesasRoutes);
 
 // 4) Só depois, middleware de arquivos estáticos
 app.use(staticMiddleware);

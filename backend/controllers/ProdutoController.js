@@ -48,12 +48,12 @@ class ProdutoController{
 }
 
     
-   static async updateProduto(req, res) {
+  static async updateProduto(req, res) {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // aqui id vai ser o "cod"
     const { cod, nome, preco, tipo, qtd } = req.body;
 
-    const produtoExistente = await Produto.findById(id);
+    const produtoExistente = await Produto.findOne({ cod: id });
     if (!produtoExistente) {
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
