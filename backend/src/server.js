@@ -17,6 +17,7 @@ import connectDB from '../db.js';
 import produtoRoutes from '../routes/produtoRoutes.js';
 import usuarioRoutes from '../routes/usuarioRoutes.js';
 import mesasRoutes from '../routes/mesasRoutes.js';
+import cupomRoutes from '../routes/cupomRoutes.js';
 
 dotenv.config();
 await connectDB();
@@ -39,6 +40,7 @@ app.use(jsonMiddleware);
 app.use('/api/produtos', produtoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/mesas', mesasRoutes);
+app.use('/api/cupons', cupomRoutes);
 
 // 4) Só depois, middleware de arquivos estáticos
 app.use(staticMiddleware);

@@ -1,7 +1,7 @@
 /* CODIGO INDEX.JSX */
 
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Card, Statistic, Table, Tag, Space, Button, Modal, Form, Input, DatePicker, Select } from 'antd';
+import { Layout, Menu, Card, Statistic, Table, Tag, Space, Button, Modal, Form, Input, DatePicker, Select, InputNumber } from 'antd';
 import {
   ShopOutlined,
   DollarOutlined,
@@ -13,7 +13,8 @@ import {
   InboxOutlined,
   PieChartOutlined,
   BarChartOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  TagOutlined // Corrigido: importação do ícone de cupom
 } from '@ant-design/icons';
 import {
   fetchProdutos,
@@ -21,8 +22,10 @@ import {
   updateProduto,
   deleteProduto
 } from '../services/produtoService';
+import { aplicarCupomEmMesa, fetchCupons, createCupom, updateCupom, deleteCupom } from '../services/cupomService';
 import { updateUsuario, deleteUsuario, createUsuario, fetchUsuarios } from '../services/usuarioService';
 import { fetchMesas, abrirMesa, adicionarProdutoMesa, fecharMesa, detalharMesa, removerMesa } from '../services/mesaService';
+import moment from 'moment';
 
 const { Header, Content, Sider } = Layout;
 const { Option } = Select;
@@ -59,6 +62,16 @@ const Home = () => {
   const [mesasAbertas, setMesasAbertas] = useState([]);
   const [mesasFechadas, setMesasFechadas] = useState([]);
 
+  // CUPONS
+  const [cupons, setCupons] = useState([]);
+  const [cupomSelecionado, setCupomSelecionado] = useState(null);
+  const [cupomForm] = Form.useForm();
+
+  // Estado para cupom em mesa
+  const [cupomMesaModal, setCupomMesaModal] = useState(false);
+  const [cupomMesaCodigo, setCupomMesaCodigo] = useState('');
+  const [mesaCupomSelecionada, setMesaCupomSelecionada] = useState(null);
+
    useEffect(() => {
     fetchProdutos()
       .then(produtos => {
@@ -73,6 +86,8 @@ const Home = () => {
     // Buscar mesas do backend
     fetchMesas('aberta').then(setMesasAbertas);
     fetchMesas('fechada').then(setMesasFechadas);
+    // Buscar cupons do backend
+    fetchCupons().then(setCupons);
   }, []);
 
 
@@ -187,6 +202,7 @@ const handleSubmit = async () => {
                     extra={<span>{mesa.abertoEm ? new Date(mesa.abertoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span>}
                     style={{ width: 220, cursor: 'pointer' }}
                     actions={[
+                      <Button type="primary" size="small" onClick={e => { e.stopPropagation(); setMesaCupomSelecionada(mesa); setCupomMesaModal(true); setCupomMesaCodigo(''); }}>Aplicar Cupom</Button>,
                       <Button type="primary" size="small" danger onClick={async (e) => {
                         e.stopPropagation();
                         await fecharMesa(mesa._id);
@@ -202,6 +218,12 @@ const handleSubmit = async () => {
                   >
                     <p><strong>Cliente:</strong> {mesa.cliente?.nome || '-'}</p>
                     <p><strong>Total:</strong> R$ {mesa.valorTotal?.toFixed(2) || '0,00'}</p>
+                    {mesa.desconto > 0 && (
+                      <>
+                        <p style={{ color: 'green' }}><strong>Desconto:</strong> -R$ {mesa.desconto.toFixed(2)}</p>
+                        <p><strong>Valor Final:</strong> R$ {(mesa.valorTotal).toFixed(2)}</p>
+                      </>
+                    )}
                     <p><strong>Produtos:</strong> {mesa.produtos?.length || 0}</p>
                   </Card>
                 ))}
@@ -466,6 +488,59 @@ const handleSubmit = async () => {
           </Card>
         );
       
+      case 'cupons':
+        return (
+          <Card
+            title="Cupons de Desconto"
+            extra={<Button type="primary" onClick={() => {
+              cupomForm.resetFields(); // Reset antes de abrir
+              setCupomSelecionado(null);
+              setModalType('novoCupom');
+              setModalVisible(true);
+            }}>Novo Cupom</Button>}
+          >
+            <Table
+              columns={[
+                { title: 'Código', dataIndex: 'codigo', key: 'codigo' },
+                { title: 'Tipo', dataIndex: 'tipo', key: 'tipo', render: t => t === 'percentual' ? '% Desconto' : 'Valor (R$)' },
+                { title: 'Valor', dataIndex: 'valor', key: 'valor', render: (v, r) => r.tipo === 'percentual' ? `${v}%` : `R$ ${v.toFixed(2)}` },
+                { title: 'Validade', dataIndex: 'validade', key: 'validade', render: v => v ? new Date(v).toLocaleDateString('pt-BR') : '-' },
+                { title: 'Ativo', dataIndex: 'ativo', key: 'ativo', render: v => v ? 'Sim' : 'Não' },
+                { title: 'Uso Único', dataIndex: 'usoUnico', key: 'usoUnico', render: v => v ? 'Sim' : 'Não' },
+                {
+                  title: 'Ações',
+                  key: 'actions',
+                  render: (_, record) => (
+                    <Space size="middle">
+                      <Button type="primary" size="small" onClick={() => {
+                        setCupomSelecionado(record);
+                        setModalType('editarCupom');
+                        setModalVisible(true);
+                        setTimeout(() => cupomForm.setFieldsValue({ ...record, validade: record.validade ? moment(record.validade) : null }), 0);
+                      }}>Editar</Button>
+                      <Button type="primary" danger size="small" onClick={async () => {
+                        Modal.confirm({
+                          title: 'Excluir Cupom',
+                          content: `Tem certeza que deseja excluir o cupom ${record.codigo}?`,
+                          okText: 'Sim',
+                          okType: 'danger',
+                          cancelText: 'Não',
+                          onOk: async () => {
+                            await deleteCupom(record._id);
+                            setCupons(prev => prev.filter(c => c._id !== record._id));
+                          }
+                        });
+                      }}>Excluir</Button>
+                    </Space>
+                  )
+                },
+              ]}
+              dataSource={cupons}
+              rowKey="_id"
+            />
+          </Card>
+        );
+      
       default:
         return <div>Selecione uma opção no menu</div>;
     }
@@ -687,6 +762,67 @@ const handleSubmit = async () => {
             <Button type="primary" htmlType="submit">Salvar</Button>
           </Form>
         );
+      case 'novoCupom':
+      case 'editarCupom': {
+        const initialCupomValues = cupomSelecionado
+          ? {
+              ...cupomSelecionado,
+              validade: cupomSelecionado.validade ? moment(cupomSelecionado.validade) : null,
+              valor: typeof cupomSelecionado.valor === 'number' ? cupomSelecionado.valor : null
+            }
+          : { tipo: 'percentual', ativo: true, usoUnico: false, valor: null };
+        return (
+          <Form layout="vertical" form={cupomForm} initialValues={initialCupomValues} onFinish={async () => {
+            try {
+              const values = await cupomForm.validateFields();
+              const payload = {
+                ...values,
+                validade: values.validade ? values.validade.toDate() : null
+              };
+              if (modalType === 'novoCupom') {
+                const novo = await createCupom(payload);
+                setCupons(prev => [...prev, novo]);
+              } else if (modalType === 'editarCupom' && cupomSelecionado) {
+                const atualizado = await updateCupom(cupomSelecionado._id, payload);
+                setCupons(prev => prev.map(c => c._id === cupomSelecionado._id ? atualizado : c));
+              }
+              setModalVisible(false);
+              setCupomSelecionado(null);
+              setTimeout(() => cupomForm.resetFields(), 300); // Reset só depois de fechar
+            } catch (err) {}
+          }}>
+            <Form.Item name="codigo" label="Código" rules={[{ required: true, message: 'Informe o código do cupom' }]}> 
+              <Input autoFocus />
+            </Form.Item>
+            <Form.Item name="tipo" label="Tipo" rules={[{ required: true, message: 'Selecione o tipo' }]}> 
+              <Select>
+                <Option value="percentual">% Desconto</Option>
+                <Option value="valor">Valor (R$)</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="valor" label="Valor" rules={[{ required: true, type: 'number', message: 'Informe o valor' }]}> 
+              <InputNumber min={1} style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="validade" label="Validade"> 
+              <DatePicker format="DD/MM/YYYY" />
+            </Form.Item>
+            <Form.Item name="ativo" label="Ativo"> 
+              <Select>
+                <Option value={true}>Sim</Option>
+                <Option value={false}>Não</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="usoUnico" label="Uso Único"> 
+              <Select>
+                <Option value={true}>Sim</Option>
+                <Option value={false}>Não</Option>
+              </Select>
+            </Form.Item>
+            <Button type="primary" htmlType="submit">Salvar</Button>
+          </Form>
+        );
+      }
+      
       default:
         return null;
     }
@@ -779,6 +915,9 @@ const handleSubmit = async () => {
           <Menu.Item key="dre" icon={<BarChartOutlined />}>
             DRE
           </Menu.Item>
+          <Menu.Item key="cupons" icon={<TagOutlined />}>
+            Cupons
+          </Menu.Item>
           <Menu.Item key="sair" icon={<LogoutOutlined />} style={{ marginTop: 'auto' }}>
             Sair
           </Menu.Item>
@@ -803,7 +942,9 @@ const handleSubmit = async () => {
           modalType === 'novoCliente' ? 'Novo Cliente' :
           modalType === 'editarCliente' ? 'Editar Cliente' :
           modalType === 'novoProduto' ? 'Novo Produto' :
-          modalType === 'editarProduto' ? 'Editar Produto' : ''
+          modalType === 'editarProduto' ? 'Editar Produto' :
+          modalType === 'novoCupom' ? 'Novo Cupom' :
+          modalType === 'editarCupom' ? 'Editar Cupom' : ''
         }
         visible={modalVisible}
         onOk={
@@ -816,12 +957,63 @@ const handleSubmit = async () => {
           setClienteSelecionado(null);
           clienteForm.resetFields();
           abrirMesaForm.resetFields();
+          cupomForm.resetFields();
         }}
         footer={null}
         width={600}
       >
         {renderModal()}
       </Modal>
+
+      {/* Modal para aplicar cupom em mesa */}
+      {cupomMesaModal && mesaCupomSelecionada && (
+        <Modal
+          title={`Aplicar Cupom na Mesa ${mesaCupomSelecionada?.mesa || ''}`}
+          visible={cupomMesaModal}
+          onCancel={() => { setCupomMesaModal(false); setMesaCupomSelecionada(null); setCupomMesaCodigo(''); }}
+          footer={[
+            <Button key="cancel" onClick={() => { setCupomMesaModal(false); setMesaCupomSelecionada(null); setCupomMesaCodigo(''); }}>
+              Cancelar
+            </Button>,
+            <Button key="apply" type="primary" onClick={async () => {
+              if (!cupomMesaCodigo) return Modal.warning({ title: 'Informe o código do cupom' });
+              try {
+                await aplicarCupomEmMesa({ id: mesaCupomSelecionada?._id, codigo: cupomMesaCodigo });
+                fetchMesas('aberta').then(setMesasAbertas);
+                setCupomMesaModal(false);
+                setMesaCupomSelecionada(null);
+                setCupomMesaCodigo('');
+                Modal.success({ title: 'Cupom aplicado!', content: 'O desconto foi aplicado à mesa.' });
+              } catch (err) {
+                Modal.error({ title: 'Erro', content: err?.response?.data?.error || 'Não foi possível aplicar o cupom.' });
+              }
+            }}>
+              Aplicar
+            </Button>
+          ]}
+        >
+          <Input
+            placeholder="Código do cupom"
+            value={cupomMesaCodigo}
+            onChange={e => setCupomMesaCodigo(e.target.value)}
+            onPressEnter={async () => {
+              if (!cupomMesaCodigo) return;
+              try {
+                await aplicarCupomEmMesa({ id: mesaCupomSelecionada?._id, codigo: cupomMesaCodigo });
+                fetchMesas('aberta').then(setMesasAbertas);
+                setCupomMesaModal(false);
+                setMesaCupomSelecionada(null);
+                setCupomMesaCodigo('');
+                Modal.success({ title: 'Cupom aplicado!', content: 'O desconto foi aplicado à mesa.' });
+              } catch (err) {
+                Modal.error({ title: 'Erro', content: err?.response?.data?.error || 'Não foi possível aplicar o cupom.' });
+              }
+            }}
+            maxLength={20}
+            autoFocus
+          />
+        </Modal>
+      )}
     </Layout>
   );
 };

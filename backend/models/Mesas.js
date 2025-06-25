@@ -13,6 +13,12 @@ const MesaSchema = new mongoose.Schema({
   produtos: [ProdutoMesaSchema],
   status: { type: String, enum: ['aberta', 'fechada'], default: 'aberta' },
   valorTotal: { type: Number, default: 0 },
+  cupom: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Cupom',
+    required: false
+  },
+  desconto: { type: Number, default: 0 },
   abertoEm: { type: Date, default: Date.now },
   fechadoEm: Date,
   historico: [Object]
