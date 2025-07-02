@@ -243,7 +243,8 @@ const handleSubmit = async () => {
                     key: 'actions',
                     render: (_, record) => (
                       <Button type="primary" size="small" onClick={() => {
-                        Modal.info({
+                        console.log(record); // Veja o que aparece no console
+                        Modal.confirm({
                           title: `Detalhes da Mesa ${record.mesa}`,
                           content: (
                             <div>
@@ -411,10 +412,10 @@ const handleSubmit = async () => {
                             okType: 'danger',
                             cancelText: 'Não',
                             onOk: () => {
-                              return deleteProduto(record.cod)
-                                .then(() => setProdutos(prev => prev.filter(p => p.cod !== record.cod)))
-                                .catch(() => Modal.error({ title: 'Erro', content: 'Não foi possível excluir o produto.' }));
-                            }
+                                return deleteProduto(record.cod)
+                                  .then(() => setProdutos(prev => prev.filter(p => p.cod !== record.cod)))
+                                  .catch(() => Modal.error({ title: 'Erro', content: 'Não foi possível excluir o produto.' }));
+                              }
                           });
                         }}
                       >

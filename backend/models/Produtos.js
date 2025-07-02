@@ -36,6 +36,18 @@ class Produto {
   static async delete(id) {
     return await produtoModel.findByIdAndDelete(id);
   }
+
+  static async deleteByCod(cod) {
+    return await produtoModel.findOneAndDelete({ cod });
+  }
+
+  static async updateByCod(cod, update) {
+    return await produtoModel.findOneAndUpdate({ cod }, update, { new: true });
+  }
+
+  static async findByCod(cod) {
+    return await produtoModel.findOne({ cod });
+  }
 }
 
 export default Produto;
