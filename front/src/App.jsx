@@ -1,13 +1,13 @@
-// src/App.jsx
-import Home from './pages/Home';
+import ThemeToggle from "./components/ThemeToggle";
+import LoginForm from "./components/LoginForm";
+import "./index.css";
+import "./theme.css";
 
-
-function App() {
+export default function App() {
   return (
-    <div>
-      <Home />
+    <div className="login-container">
+      <ThemeToggle />
+      <LoginForm />
     </div>
   );
 }
-
-export default App;
