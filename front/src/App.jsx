@@ -1,5 +1,5 @@
 import ThemeToggle from "./components/ThemeToggle";
-import LoginForm from "./components/LoginForm";
+import LoginForm from "./pages/Cadrastro";
 import "./index.css";
 import "./theme.css";
 

@@ -1,0 +1,72 @@
+import { useState } from "react";
+
+export default function CadastroForm() {
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [cargo, setCargo] = useState("garcom"); // valor padrão
+  const [mensagem, setMensagem] = useState("");
+
+  const handleCadastro = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:5000/api/usuario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email, senha, cargo }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMensagem(`Usuário ${data.nome} cadastrado com sucesso!`);
+        setNome("");
+        setEmail("");
+        setSenha("");
+        setCargo("garcom");
+      } else {
+        setMensagem(data.error || "Erro ao cadastrar usuário");
+      }
+    } catch (error) {
+      setMensagem("Erro ao conectar com o servidor");
+    }
+  };
+
+  return (
+    <div className="card">
+      <h2>Cadastrar Usuário</h2>
+      <form onSubmit={handleCadastro}>
+        <input
+          type="text"
+          placeholder="Nome"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          placeholder="E-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Senha"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          required
+        />
+        <select value={cargo} onChange={(e) => setCargo(e.target.value)}>
+          <option value="garcom">Garçom</option>
+          <option value="caixa">Caixa</option>
+          <option value="gerente">Gerente</option>
+        </select>
+        <button type="submit">Cadastrar</button>
+      </form>
+
+      {mensagem && <p>{mensagem}</p>}
+    </div>
+  );
+}
