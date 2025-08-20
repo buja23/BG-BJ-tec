@@ -1,16 +1,36 @@
 import React, { useState } from 'react';
-import { Card, Statistic, Table, Button, Modal, Form, Input } from 'antd';
-import { DollarOutlined } from '@ant-design/icons';
+import { Card, Statistic, Table, Button, Modal, Form, Input, message } from 'antd';
 
 const CaixaPage = () => {
   const [caixaAberto, setCaixaAberto] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
+  const [valor, setValor] = useState('');
+  const [responsavel, setResponsavel] = useState('');
 
   const historicoCaixa = [
     { key: '1', data: '10/05/2023', valorInicial: 150.00, valorFinal: 1850.00, responsavel: 'João Silva' },
     { key: '2', data: '09/05/2023', valorInicial: 150.00, valorFinal: 2200.00, responsavel: 'Maria Souza' },
   ];
+
+  const handleAcaoCaixa = () => {
+    if (!valor || !responsavel) {
+      message.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    if (modalType === 'abrirCaixa') {
+      message.success('Caixa aberto com sucesso!');
+      setCaixaAberto(true);
+    } else {
+      message.success('Caixa fechado com sucesso!');
+      setCaixaAberto(false);
+    }
+
+    setModalVisible(false);
+    setValor('');
+    setResponsavel('');
+  };
 
   return (
     <div>
@@ -61,18 +81,23 @@ const CaixaPage = () => {
       <Modal
         title={modalType === 'abrirCaixa' ? 'Abrir Caixa' : 'Fechar Caixa'}
         visible={modalVisible}
-        onOk={() => {
-          setCaixaAberto(modalType === 'abrirCaixa');
-          setModalVisible(false);
-        }}
+        onOk={handleAcaoCaixa}
         onCancel={() => setModalVisible(false)}
       >
         <Form layout="vertical">
           <Form.Item label={modalType === 'abrirCaixa' ? 'Valor Inicial' : 'Valor Final'} required>
-            <Input prefix="R$" type="number" />
+            <Input 
+              prefix="R$" 
+              type="number" 
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+            />
           </Form.Item>
           <Form.Item label="Responsável" required>
-            <Input />
+            <Input 
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
+            />
           </Form.Item>
         </Form>
       </Modal>

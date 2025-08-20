@@ -8,10 +8,7 @@ const DeliverysPage = () => {
   ];
 
   return (
-    <Card 
-      title="Pedidos de Delivery"
-      extra={<Button type="primary">Novo Pedido</Button>}
-    >
+    <Card title="Pedidos de Delivery">
       <Table 
         columns={[
           { title: 'Pedido', dataIndex: 'pedido', key: 'pedido' },
