@@ -38,7 +38,7 @@ app.use(jsonMiddleware);
 
 // 3) Rotas da API em primeiro lugar
 app.use('/api/produtos', produtoRoutes);
-app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/usuario', usuarioRoutes);
 app.use('/api/mesas', mesasRoutes);
 app.use('/api/cupons', cupomRoutes);
 
