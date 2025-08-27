@@ -11,7 +11,7 @@ export default function CadastroForm() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/usuario", {
+      const response = await fetch("http://localhost:3000/api/usuario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, senha, cargo }),
@@ -29,6 +29,7 @@ export default function CadastroForm() {
         setMensagem(data.error || "Erro ao cadastrar usuário");
       }
     } catch (error) {
+      console.log("erro") // console monstra essa linha no console
       setMensagem("Erro ao conectar com o servidor");
     }
   };
