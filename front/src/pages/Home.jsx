@@ -1,27 +1,16 @@
 import React from 'react';
-import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../../../layout/Sidebar';
-import Header from '../../../layout/Header';
-
-const { Content } = Layout;
+import Sidebar from '../components/Sidebar'; // Supondo que a Sidebar esteja em 'components'
 
 const Home = () => {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sidebar />
-      <Layout style={{ marginLeft: 250 }}> {/* Margin para a sidebar fixa */}
-        <Header />
-        <Content style={{ 
-          margin: '16px', 
-          padding: 24, 
-          background: '#fff',
-          minHeight: 'calc(100vh - 96px)'
-        }}>
-          <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
+    <div style={{ display: 'flex' }}>
+      <Sidebar /> {/* Sua barra lateral fica aqui, sempre visível */}
+      <main style={{ flexGrow: 1, padding: '20px' }}>
+        {/* O conteúdo da página (Caixa, Mesas, etc.) será renderizado aqui */}
+        <Outlet />
+      </main>
+    </div>
   );
 };
 
