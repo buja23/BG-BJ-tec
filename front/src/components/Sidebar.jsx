@@ -1,9 +1,6 @@
-// src/components/Sidebar.jsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
-
-// Importando os ícones que vamos usar, incluindo o de Sair
 import {
   CalculatorOutlined,
   AppstoreOutlined,
@@ -14,35 +11,32 @@ import {
   ShopOutlined,
   BankOutlined,
   PieChartOutlined,
-  LogoutOutlined, // Ícone de Sair
+  LogoutOutlined,
 } from '@ant-design/icons';
 
-const { Sider } = Layout; // Usaremos o Sider do antd
+const { Sider } = Layout;
 
-// Itens do menu para facilitar a organização
+// Itens do menu atualizados com o prefixo "/app"
 const menuItems = [
-  { key: '/caixa', icon: <CalculatorOutlined />, label: 'Caixa' },
-  { key: '/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
-  { key: '/deliverys', icon: <RocketOutlined />, label: 'Entregas' },
-  { key: '/clientes', icon: <UserOutlined />, label: 'Clientes' },
-  { key: '/ranking', icon: <TrophyOutlined />, label: 'Ranking' },
-  { key: '/estoque', icon: <BoxPlotOutlined />, label: 'Estoque' },
-  { key: '/negocio', icon: <ShopOutlined />, label: 'Meu Negócio' },
-  { key: '/financeiro', icon: <BankOutlined />, label: 'Financeiro' },
-  { key: '/dre', icon: <PieChartOutlined />, label: 'DRE' },
+  { key: '/app/caixa', icon: <CalculatorOutlined />, label: 'Caixa' },
+  { key: '/app/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
+  { key: '/app/deliverys', icon: <RocketOutlined />, label: 'Entregas' },
+  { key: '/app/clientes', icon: <UserOutlined />, label: 'Clientes' },
+  { key: '/app/ranking', icon: <TrophyOutlined />, label: 'Ranking' },
+  { key: '/app/estoque', icon: <BoxPlotOutlined />, label: 'Estoque' },
+  { key: '/app/negocio', icon: <ShopOutlined />, label: 'Meu Negócio' },
+  { key: '/app/financeiro', icon: <BankOutlined />, label: 'Financeiro' },
+  { key: '/app/dre', icon: <PieChartOutlined />, label: 'DRE' },
 ];
 
-
-const Sidebar = () => {
+export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation(); // Hook para saber a rota atual
+  const location = useLocation();
 
-  // Função para lidar com o clique no botão Sair
   const handleLogout = () => {
     console.log("Usuário deslogado!");
-    // Aqui você adicionaria a lógica real de logout,
-    // como limpar tokens e redirecionar para a página de login.
-    // Ex: history.push('/login');
+    // Lógica de logout aqui (ex: limpar localStorage e redirecionar)
+    // window.location.href = '/login'; 
   };
 
   return (
@@ -57,8 +51,8 @@ const Sidebar = () => {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[location.pathname]} // Deixa o item da rota atual selecionado
-          style={{ borderRight: 0 }} // Remove a pequena borda direita do menu
+          selectedKeys={[location.pathname]}
+          style={{ borderRight: 0 }}
         >
           {menuItems.map(item => (
             <Menu.Item key={item.key} icon={item.icon}>
@@ -67,7 +61,6 @@ const Sidebar = () => {
           ))}
         </Menu>
 
-        {/* Item de Sair empurrado para o final */}
         <Menu
             theme="dark"
             mode="inline"
@@ -77,10 +70,7 @@ const Sidebar = () => {
                 Sair
             </Menu.Item>
         </Menu>
-
       </div>
     </Sider>
   );
 };
-
-export default Sidebar;
