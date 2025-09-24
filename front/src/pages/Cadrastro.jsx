@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom"; // Importa o componente de Link
 
 export default function CadastroForm() {
   const [nome, setNome] = useState("");
@@ -29,7 +30,7 @@ export default function CadastroForm() {
         setMensagem(data.error || "Erro ao cadastrar usuário");
       }
     } catch (error) {
-      console.log("erro") // console monstra essa linha no console
+      console.log("erro"); // console monstra essa linha no console
       setMensagem("Erro ao conectar com o servidor");
     }
   };
@@ -68,6 +69,11 @@ export default function CadastroForm() {
       </form>
 
       {mensagem && <p>{mensagem}</p>}
+
+     
+      <p>
+        Já tem Cadastro? <Link to="/Login">Faça o Login!</Link>
+      </p>
     </div>
   );
 }

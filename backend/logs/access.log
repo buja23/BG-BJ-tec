@@ -498,3 +498,4 @@
 ::1 - - [27/Aug/2025:18:55:20 +0000] "POST /api/usuario HTTP/1.1" 400 98 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
 ::1 - - [27/Aug/2025:18:57:23 +0000] "POST /api/usuario HTTP/1.1" 400 98 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
 ::1 - - [27/Aug/2025:18:58:55 +0000] "POST /api/usuario HTTP/1.1" 201 164 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+::1 - - [24/Sep/2025:19:26:49 +0000] "POST /api/usuario HTTP/1.1" 201 168 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
