@@ -512,3 +512,4 @@
 ::1 - - [01/Oct/2025:02:42:24 +0000] "POST /api/login HTTP/1.1" 404 149 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 OPR/121.0.0.0"
 ::1 - - [01/Oct/2025:02:42:25 +0000] "POST /api/login HTTP/1.1" 404 149 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 OPR/121.0.0.0"
 ::1 - - [01/Oct/2025:02:49:09 +0000] "POST /api/login HTTP/1.1" 404 149 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 OPR/121.0.0.0"
+::1 - - [01/Oct/2025:05:06:44 +0000] "POST /api/login HTTP/1.1" 200 338 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 OPR/121.0.0.0"

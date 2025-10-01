@@ -1,15 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import './index.css'; 
+import App from './App.jsx';
+import { UsuarioProvider } from './context/UsuarioContext.jsx';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* O BrowserRouter deve ficar aqui, envolvendo toda a aplicação */}
     <BrowserRouter>
-      <App />
+      <UsuarioProvider>
+        <App />
+      </UsuarioProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
