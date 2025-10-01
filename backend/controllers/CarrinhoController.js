@@ -2,7 +2,6 @@ import Carrinho from '../models/CarrinhoSchema.js';
 
 export const adicionarAoCarrinho = async (req, res) => {
   const { usuarioId, produtoId, nome, preco, quantidade } = req.body;
-
   try {
     let carrinho = await Carrinho.findOne({ usuarioId });
 

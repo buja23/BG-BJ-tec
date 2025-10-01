@@ -1,153 +1,155 @@
-import React, { useState } from 'react';
-import { Card, Button, Table, Empty, Modal, Form, Select, Input } from 'antd';
+// src/pages/MesasPage.jsx
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Empty, Modal, Select, Input } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useMesas } from '../context/MesasContext.jsx';
+import { fetchMesasAbertas, fetchMesasFechadas } from '../services/mesaService';
+import { useProdutos } from '../context/ProdutosContext.jsx';
 
 const { Option } = Select;
 
 const MesasPage = () => {
-  const [mesasAbertas, setMesasAbertas] = useState([
-    { key: '1', numero: '1', clientes: 2, total: 45.00, tempo: '10 min', produtos: [] },
-    { key: '2', numero: '2', clientes: 4, total: 72.50, tempo: '20 min', produtos: [] },
-  ]);
-
-  const [mesasFechadas, setMesasFechadas] = useState([
-    { key: '3', numero: '3', clientes: 3, total: 100.00, data: '22/06/2025 20:30' },
-    { key: '4', numero: '4', clientes: 2, total: 80.00, data: '22/06/2025 19:10' },
-  ]);
-
+  const { abrirMesa, adicionarProduto, fecharMesa } = useMesas();
+  const [mesasAbertas, setMesasAbertas] = useState([]);
+  const [mesasFechadas, setMesasFechadas] = useState([]);
+  // Carregar mesas abertas e fechadas ao montar
+  useEffect(() => {
+    const carregar = async () => {
+      const abertas = await fetchMesasAbertas();
+      const fechadas = await fetchMesasFechadas();
+      setMesasAbertas(abertas);
+      setMesasFechadas(fechadas);
+    };
+    carregar();
+  }, []);
+  const { produtos } = useProdutos();
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState('');
   const [mesaSelecionada, setMesaSelecionada] = useState(null);
-  const [produtoMesa, setProdutoMesa] = useState({ produtoId: '', qtd: 1 });
+  const [produtoSelecionado, setProdutoSelecionado] = useState({ produtoId: '', qtd: 1 });
 
-  const produtos = [
-    { cod: '1', nome: 'Hambúrguer', preco: 25.00 },
-    { cod: '2', nome: 'Refrigerante', preco: 8.00 },
-    { cod: '3', nome: 'Batata Frita', preco: 15.00 },
-  ];
+  const formatarMoeda = (valor) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 
-  const formatarMoeda = (valor) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(valor);
-  };
-
-  const confirmarFechamentoMesa = (mesa) => {
-    Modal.confirm({
-      title: 'Fechar Mesa',
-      content: `Deseja realmente fechar a Mesa ${mesa.numero}?`,
-      onOk: () => {
-        const novaMesaFechada = {
-          ...mesa,
-          data: new Date().toLocaleString(),
-          key: Date.now().toString()
-        };
-        setMesasFechadas([novaMesaFechada, ...mesasFechadas]);
-        setMesasAbertas(mesasAbertas.filter(m => m.key !== mesa.key));
-      }
+  const handleAdicionarProduto = async () => {
+    if (!mesaSelecionada || !produtoSelecionado.produtoId) return;
+    const produto = produtos.find(p => p._id === produtoSelecionado.produtoId);
+    await adicionarProduto(mesaSelecionada._id, { 
+      produtoId: produto._id,
+      nome: produto.nome,
+      preco: produto.preco,
+      qtd: produtoSelecionado.qtd
     });
+    setProdutoSelecionado({ produtoId: '', qtd: 1 });
   };
 
   return (
     <div>
-      <Card 
-        title="Mesas em Aberto" 
-        style={{ marginBottom: 20 }}
-        extra={
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />}
-            onClick={() => {
-              const novaMesa = {
-                key: Date.now().toString(),
-                numero: (mesasAbertas.length + 1).toString(),
-                clientes: 0,
-                total: 0,
-                tempo: '0 min',
-                produtos: []
-              };
-              setMesasAbertas([...mesasAbertas, novaMesa]);
-            }}
-          >
-            Nova Mesa
-          </Button>
-        }
-      >
+      <Card title="Mesas Abertas" extra={
+        <Button type="primary" icon={<PlusOutlined />} onClick={async () => {
+          const novaMesaNumero = mesasAbertas.length + mesasFechadas.length + 1;
+          await abrirMesa(novaMesaNumero.toString());
+          // Aguarda e atualiza as listas
+          setTimeout(async () => {
+            setMesasAbertas(await fetchMesasAbertas());
+            setMesasFechadas(await fetchMesasFechadas());
+          }, 300);
+        }}>
+          Nova Mesa
+        </Button>
+      }>
         {mesasAbertas.length > 0 ? (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             {mesasAbertas.map(mesa => (
               <Card
-                key={mesa.key}
-                title={`Mesa ${mesa.numero}`}
-                extra={<span>{mesa.tempo}</span>}
+                key={mesa._id}
+                title={`Mesa ${mesa.mesa}`}
                 style={{ width: 200, cursor: 'pointer' }}
                 actions={[
-                  <EditOutlined key="edit" onClick={(e) => {
-                    e.stopPropagation();
+                  <EditOutlined key="edit" onClick={() => {
                     setMesaSelecionada(mesa);
-                    setModalType('editarMesa');
                     setModalVisible(true);
                   }} />,
-                  <DeleteOutlined key="delete" onClick={(e) => {
-                    e.stopPropagation();
-                    confirmarFechamentoMesa(mesa);
+                  <DeleteOutlined key="delete" onClick={async () => {
+                    await fecharMesa(mesa._id);
+                    setMesasAbertas(await fetchMesasAbertas());
+                    setMesasFechadas(await fetchMesasFechadas());
                   }} />
                 ]}
-                onClick={() => {
-                  setMesaSelecionada(mesa);
-                  setModalType('detalhesMesa');
-                  setModalVisible(true);
-                }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Clientes:</span>
-                  <span>{mesa.clientes}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                  <span>Total:</span>
-                  <span>{formatarMoeda(mesa.total)}</span>
-                </div>
+                <div>Total: {formatarMoeda(mesa.valorTotal)}</div>
+                <div>Status: {mesa.status}</div>
               </Card>
             ))}
           </div>
-        ) : (
-          <Empty description="Nenhuma mesa aberta no momento" />
-        )}
+        ) : <Empty description="Nenhuma mesa aberta" />}
       </Card>
 
-      <Card title="Mesas Fechadas (Últimas 24h)" style={{ marginTop: 20 }}>
+      <Card title="Mesas Fechadas" style={{ marginTop: 24 }}>
         {mesasFechadas.length > 0 ? (
-          <Table
-            columns={[
-              { title: 'Mesa', dataIndex: 'numero', key: 'numero' },
-              { title: 'Clientes', dataIndex: 'clientes', key: 'clientes' },
-              { title: 'Total', dataIndex: 'total', key: 'total', render: (value) => formatarMoeda(value) },
-              { title: 'Data/Hora', dataIndex: 'data', key: 'data' },
-            ]}
-            dataSource={mesasFechadas}
-            rowKey="key"
-            pagination={{ pageSize: 5 }}
-          />
-        ) : (
-          <Empty description="Nenhuma mesa fechada nas últimas 24 horas" />
-        )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            {mesasFechadas.map(mesa => (
+              <Card
+                key={mesa._id}
+                title={`Mesa ${mesa.mesa}`}
+                style={{ width: 200 }}
+              >
+                <div>Total: {formatarMoeda(mesa.valorTotal)}</div>
+                <div>Status: {mesa.status}</div>
+              </Card>
+            ))}
+          </div>
+        ) : <Empty description="Nenhuma mesa fechada" />}
       </Card>
 
       <Modal
-        title={`Detalhes da Mesa ${mesaSelecionada?.numero}`}
-        visible={modalVisible && modalType === 'detalhesMesa'}
+        title={`Mesa ${mesaSelecionada?.mesa}`}
+        open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
       >
-        {mesaSelecionada && (
-          <div>
-            <p><strong>Número:</strong> {mesaSelecionada.numero}</p>
-            <p><strong>Clientes:</strong> {mesaSelecionada.clientes}</p>
-            <p><strong>Total:</strong> {formatarMoeda(mesaSelecionada.total)}</p>
-            <p><strong>Tempo:</strong> {mesaSelecionada.tempo}</p>
+        {/* Lista de produtos já adicionados */}
+        {mesaSelecionada?.produtos?.length > 0 ? (
+          <div style={{ marginBottom: 16 }}>
+            <b>Produtos da Mesa:</b>
+            <ul style={{ paddingLeft: 20 }}>
+              {mesaSelecionada.produtos.map((prod, idx) => (
+                <li key={idx}>
+                  {prod.nome} - Qtd: {prod.qtd} - Preço: {formatarMoeda(prod.preco)}
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
+        ) : <div style={{ marginBottom: 16 }}>Nenhum produto adicionado.</div>}
+
+        <Select
+          style={{ width: '100%', marginBottom: 10 }}
+          placeholder="Selecione um produto"
+          value={produtoSelecionado.produtoId}
+          onChange={value => setProdutoSelecionado({ ...produtoSelecionado, produtoId: value })}
+        >
+          {produtos.map(prod => (
+            <Option key={prod._id} value={prod._id}>{prod.nome}</Option>
+          ))}
+        </Select>
+
+        <Input
+          type="number"
+          min={1}
+          value={produtoSelecionado.qtd}
+          onChange={e => setProdutoSelecionado({ ...produtoSelecionado, qtd: parseInt(e.target.value) })}
+          style={{ marginBottom: 10 }}
+        />
+
+        <Button type="primary" block onClick={async () => {
+          await handleAdicionarProduto();
+          setMesasAbertas(await fetchMesasAbertas());
+          // Atualiza mesaSelecionada para refletir os produtos novos
+          const atualizada = await fetchMesasAbertas();
+          const mesaAtual = atualizada.find(m => m._id === mesaSelecionada._id);
+          if (mesaAtual) setMesaSelecionada(mesaAtual);
+        }}>
+          Adicionar Produto
+        </Button>
       </Modal>
     </div>
   );

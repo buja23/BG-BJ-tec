@@ -21,7 +21,8 @@ import EstoquePage from './pages/EstoquePage.jsx';
 import NegocioPage from './pages/NegocioPage.jsx';
 import FinanceiroPage from './pages/FinanceiroPage.jsx';
 import DrePage from './pages/DrePage.jsx';
-import ProdutosPage from './pages/Produtos.jsx';
+import ProdutosPage from './pages/ProdutosPage.jsx';
+import VendasPage from './pages/VendasPage.jsx';
 
 import PrivateRoute from './components/PrivateRoute.jsx';
 
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="financeiro" element={<FinanceiroPage />} />
               <Route path="dre" element={<DrePage />} />
               <Route path="produtos" element={<ProdutosPage />} />
+              <Route path="vendas" element={<VendasPage />} />
             </Route>
           </Route>
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = 'http://localhost:5000'; // ou a URL do seu backend
+const API = 'http://localhost:3000/api'; // URL correta do backend
 
 export const adicionarAoCarrinho = async (usuarioId, produto) => {
   const { data } = await axios.post(`${API}/carrinho/adicionar`, { 
@@ -8,7 +8,7 @@ export const adicionarAoCarrinho = async (usuarioId, produto) => {
     produtoId: produto._id,
     nome: produto.nome,
     preco: produto.preco,
-    quantidade: 1
+    quantidade: produto.quantidade || 1
   });
   return data;
 };

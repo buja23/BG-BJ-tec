@@ -34,19 +34,43 @@ class Produto {
   }
 
   static async delete(id) {
-    return await produtoModel.findByIdAndDelete(id);
+    console.log('[Produto Model] Tentando deletar produto com ID:', id);
+    try {
+      const resultado = await produtoModel.findByIdAndDelete(id);
+      console.log('[Produto Model] Resultado da deleção:', resultado);
+      return resultado;
+    } catch (error) {
+      console.error('[Produto Model] Erro ao deletar:', error);
+      throw error;
+    }
   }
 
   static async deleteByCod(cod) {
-    return await produtoModel.findOneAndDelete({ cod });
+    console.log('[Produto Model] Tentando deletar produto com código:', cod);
+    try {
+      const resultado = await produtoModel.findOneAndDelete({ cod });
+      console.log('[Produto Model] Resultado da deleção por código:', resultado);
+      return resultado;
+    } catch (error) {
+      console.error('[Produto Model] Erro ao deletar por código:', error);
+      throw error;
+    }
   }
 
-  static async updateByCod(cod, update) {
-    return await produtoModel.findOneAndUpdate({ cod }, update, { new: true });
+  static async update(id, update) {
+    return await produtoModel.findByIdAndUpdate(id, update, { new: true });
   }
 
   static async findByCod(cod) {
     return await produtoModel.findOne({ cod });
+  }
+
+  static async findByIdAndUpdate(id, update) {
+    return await produtoModel.findByIdAndUpdate(id, update, { new: true });
+  }
+
+  static async findByIdAndDelete(id) {
+    return await produtoModel.findByIdAndDelete(id);
   }
 }
 

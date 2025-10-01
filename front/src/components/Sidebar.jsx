@@ -12,6 +12,7 @@ import {
   BankOutlined,
   PieChartOutlined,
   LogoutOutlined,
+  ShoppingOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -27,6 +28,8 @@ const menuItems = [
   { key: '/app/negocio', icon: <ShopOutlined />, label: 'Meu Negócio' },
   { key: '/app/financeiro', icon: <BankOutlined />, label: 'Financeiro' },
   { key: '/app/dre', icon: <PieChartOutlined />, label: 'DRE' },
+  { key: '/app/produtos', icon: <AppstoreOutlined />, label: 'Carrinho' },
+  { key: '/app/vendas', icon: <ShoppingOutlined />, label: 'Vendas' },
 ];
 
 export default function Sidebar() {
@@ -53,23 +56,23 @@ export default function Sidebar() {
           mode="inline"
           selectedKeys={[location.pathname]}
           style={{ borderRight: 0 }}
-        >
-          {menuItems.map(item => (
-            <Menu.Item key={item.key} icon={item.icon}>
-              <Link to={item.key}>{item.label}</Link>
-            </Menu.Item>
-          ))}
-        </Menu>
+          items={menuItems.map(item => ({
+            ...item,
+            icon: item.icon,
+            label: <Link to={item.key}>{item.label}</Link>
+          }))}
+        />
 
         <Menu
-            theme="dark"
-            mode="inline"
-            style={{ marginTop: 'auto', borderRight: 0 }}
-        >
-            <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-                Sair
-            </Menu.Item>
-        </Menu>
+          theme="dark"
+          mode="inline"
+          style={{ marginTop: 'auto', borderRight: 0 }}
+          items={[{
+            key: 'logout',
+            icon: <LogoutOutlined />,
+            label: <span onClick={handleLogout}>Sair</span>
+          }]}
+        />
       </div>
     </Sider>
   );

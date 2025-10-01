@@ -27,6 +27,7 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        console.log('Login response:', data);
         // Atualiza o contexto global do usuário
         login(data.usuario);
 

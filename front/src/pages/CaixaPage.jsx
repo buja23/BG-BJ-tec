@@ -80,7 +80,7 @@ const CaixaPage = () => {
 
       <Modal
         title={modalType === 'abrirCaixa' ? 'Abrir Caixa' : 'Fechar Caixa'}
-        visible={modalVisible}
+        open={modalVisible}
         onOk={handleAcaoCaixa}
         onCancel={() => setModalVisible(false)}
       >

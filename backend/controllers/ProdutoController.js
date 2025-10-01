@@ -33,6 +33,10 @@ class ProdutoController{
   try {
     const { cod, nome, preco, tipo, qtd } = req.body;
 
+    if (!nome || !preco || !tipo || !qtd) {
+      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+    }
+
     const produtoExistente = await Produto.findByNome(nome);
     if (produtoExistente) {
       return res.status(400).json({ message: 'Já existe um produto com esse nome' });
@@ -43,25 +47,30 @@ class ProdutoController{
     res.status(201).json(salvo);
   } catch (error) {
     console.error('Erro ao cadastrar o produto:', error);
-    res.status(500).json({ message: 'Erro interno ao cadastrar o produto' });
+    res.status(500).json({ message: 'Erro interno ao cadastrar o produto: ' + error.message });
   }
 }
 
     
   static async updateProduto(req, res) {
     try {
-      const { id } = req.params; // aqui id vai ser o "cod"
+      const { id } = req.params;
       const { nome, preco, tipo, qtd } = req.body;
 
-      const produtoAtualizado = await Produto.updateByCod(id, { nome, preco, tipo, qtd });
+      if (!nome || !preco || !tipo || !qtd) {
+        return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+      }
+
+      const produtoAtualizado = await Produto.findByIdAndUpdate(id, { nome, preco, tipo, qtd });
+
       if (!produtoAtualizado) {
         return res.status(404).json({ message: 'Produto não encontrado' });
       }
 
       res.json(produtoAtualizado);
     } catch (error) {
-      console.error('Erro ao atualizar o produto', error);
-      res.status(500).json({ message: 'Erro interno ao atualizar o produto' });
+      console.error('Erro ao atualizar o produto:', error);
+      res.status(500).json({ message: 'Erro interno ao atualizar o produto: ' + error.message });
     }
   }
 
@@ -70,15 +79,34 @@ class ProdutoController{
     static async deleteProduto(req, res) {
   try {
     const { id } = req.params;
-    const produtoExistente = await Produto.findByCod(id);
-    if (!produtoExistente) {
+    console.log('[ProdutoController] Requisição de delete recebida para ID:', id);
+    
+    // Primeiro verifica se o produto existe
+    console.log('[ProdutoController] Verificando se o produto existe...');
+    const produto = await Produto.findById(id);
+    
+    if (!produto) {
+      console.log('[ProdutoController] Produto não encontrado para deletar');
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
-    await Produto.deleteByCod(id);
-    res.status(204).send();
+    
+    console.log('[ProdutoController] Produto encontrado:', produto);
+
+    // Usa o método delete do modelo Produto
+    console.log('[ProdutoController] Iniciando processo de deleção...');
+    const deletado = await Produto.delete(id);
+    console.log('[ProdutoController] Resultado da deleção:', deletado);
+    
+    if (deletado) {
+      console.log('[ProdutoController] Produto deletado com sucesso');
+      res.status(200).json({ message: 'Produto deletado com sucesso' });
+    } else {
+      console.log('[ProdutoController] Falha ao deletar produto');
+      res.status(500).json({ message: 'Erro ao deletar produto' });
+    }
   } catch (error) {
-    console.error('Erro ao deletar produto:', error);
-    res.status(500).json({ message: 'Erro interno ao deletar produto' });
+    console.error('[ProdutoController] Erro ao deletar produto:', error);
+    res.status(500).json({ message: 'Erro interno ao deletar produto: ' + error.message });
   }
 }
 

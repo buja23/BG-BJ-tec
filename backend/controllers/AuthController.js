@@ -35,7 +35,7 @@ class AuthController {
         message: 'Login bem-sucedido!',
         token,
         usuario: {
-          id: usuario._id,
+          _id: usuario._id,
           nome: usuario.nome,
           email: usuario.email,
           cargo: usuario.cargo

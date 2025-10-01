@@ -1,0 +1,160 @@
+import Venda from '../models/VendaSchema.js';
+
+export const createVenda = async (req, res) => {
+  try {
+    console.log('Recebida requisição para criar venda:', req.body);
+    const { cliente, produtos, formaPagamento, observacao } = req.body;
+
+      // Validação básica
+      if (!cliente || !produtos || !formaPagamento) {
+        console.log('Dados incompletos:', { cliente, produtos, formaPagamento });
+        return res.status(400).json({ 
+          message: 'Dados incompletos. Cliente, produtos e forma de pagamento são obrigatórios.' 
+        });
+      }
+
+      if (!produtos.length) {
+        return res.status(400).json({ 
+          message: 'A venda deve conter pelo menos um produto.' 
+        });
+      }
+
+      console.log('Criando nova venda com dados:', {
+        cliente,
+        produtos,
+        formaPagamento,
+        observacao
+      });
+
+      console.log('Dados antes de criar o modelo:', {
+        cliente,
+        produtos,
+        formaPagamento,
+        observacao,
+        data: new Date()
+      });
+
+      const venda = new Venda({
+        cliente,
+        produtos,
+        formaPagamento,
+        observacao,
+        data: new Date(),
+        total: produtos.reduce((acc, p) => acc + (p.quantidade * p.produto.preco), 0)
+      });
+
+      console.log('Modelo de venda criado:', venda);
+      const vendaSalva = await venda.save();
+      console.log('Venda salva com sucesso:', vendaSalva);
+      res.status(201).json(vendaSalva);
+    } catch (error) {
+      console.error('Erro ao criar venda:', error);
+      res.status(500).json({ message: 'Erro interno ao criar venda' });
+    }
+  }
+
+export const getAllVendas = async (req, res) => {
+    console.log('Recebida requisição para listar vendas');
+    try {
+      const vendas = await Venda.find()
+        .sort({ createdAt: -1 }); // Ordena por data de criação, mais recentes primeiro
+      console.log('Vendas encontradas:', vendas.length);
+      res.json(vendas);
+    } catch (error) {
+      console.error('Erro ao buscar vendas:', error);
+      res.status(500).json({ message: 'Erro interno ao buscar vendas' });
+    }
+  }
+
+export const getVendaById = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const venda = await Venda.findById(id);
+      
+      if (!venda) {
+        return res.status(404).json({ message: 'Venda não encontrada' });
+      }
+      
+      res.json(venda);
+    } catch (error) {
+      console.error('Erro ao buscar venda:', error);
+      res.status(500).json({ message: 'Erro interno ao buscar venda' });
+    }
+  }
+
+  static async getVendasByPeriod(req, res) {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      const query = {
+        data: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        }
+      };
+      
+      const vendas = await Venda.find(query).sort({ data: -1 });
+      res.json(vendas);
+    } catch (error) {
+      console.error('Erro ao buscar vendas por período:', error);
+      res.status(500).json({ message: 'Erro interno ao buscar vendas por período' });
+    }
+  }
+
+  static async updateVendaStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!['pendente', 'concluida', 'cancelada'].includes(status)) {
+        return res.status(400).json({ message: 'Status inválido' });
+      }
+
+      const venda = await Venda.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true }
+      );
+
+      if (!venda) {
+        return res.status(404).json({ message: 'Venda não encontrada' });
+      }
+
+      res.json(venda);
+    } catch (error) {
+      console.error('Erro ao atualizar status da venda:', error);
+      res.status(500).json({ message: 'Erro interno ao atualizar status da venda' });
+    }
+  }
+
+  static async getVendasStats(req, res) {
+    try {
+      const stats = await Venda.aggregate([
+        {
+          $match: {
+            status: 'concluida'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalVendas: { $sum: 1 },
+            totalFaturamento: { $sum: '$total' },
+            mediaTicket: { $avg: '$total' }
+          }
+        }
+      ]);
+
+      res.json(stats[0] || {
+        totalVendas: 0,
+        totalFaturamento: 0,
+        mediaTicket: 0
+      });
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas de vendas:', error);
+      res.status(500).json({ message: 'Erro interno ao buscar estatísticas' });
+    }
+  }
+
+
+export default VendaController;

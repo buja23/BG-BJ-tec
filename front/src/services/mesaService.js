@@ -3,12 +3,12 @@
 const API_URL = 'http://localhost:3000/api';
 
 export const fetchMesasAbertas = async () => {
-  const response = await fetch(`${API_URL}/mesas/abertas`);
+  const response = await fetch(`${API_URL}/mesas?status=aberta`);
   return await response.json();
 };
 
 export const fetchMesasFechadas = async () => {
-  const response = await fetch(`${API_URL}/mesas/fechadas`);
+  const response = await fetch(`${API_URL}/mesas?status=fechada`);
   return await response.json();
 };
 

@@ -8,14 +8,24 @@ export function UsuarioProvider({ children }) {
   // Carregar usuário do localStorage ao iniciar
   useEffect(() => {
     const usuarioStorage = localStorage.getItem('usuario');
+    console.log('Loading user from storage:', usuarioStorage);
     if (usuarioStorage) {
-      setUsuario(JSON.parse(usuarioStorage));
+      const parsedUser = JSON.parse(usuarioStorage);
+      console.log('Parsed user:', parsedUser);
+      setUsuario(parsedUser);
     }
   }, []);
 
   const login = (usuarioData) => {
-    setUsuario(usuarioData);
-    localStorage.setItem('usuario', JSON.stringify(usuarioData));
+    console.log('Login called with data:', usuarioData);
+    // Normalize the user object to ensure it has _id
+    const normalizedUser = {
+      ...usuarioData,
+      _id: usuarioData._id || usuarioData.id
+    };
+    setUsuario(normalizedUser);
+    localStorage.setItem('usuario', JSON.stringify(normalizedUser));
+    console.log('Saved user to localStorage:', JSON.stringify(normalizedUser));
   };
 
   const logout = () => {
