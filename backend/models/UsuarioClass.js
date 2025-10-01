@@ -8,10 +8,9 @@ class Usuario {
     this.cargo = null; // definido na subclasse
   }
 
-  //aa
   async save() {
     const doc = new UsuarioModel({
-      nome:  this.nome,
+      nome: this.nome,
       email: this.email,
       senha: this.senha,
       cargo: this.cargo
@@ -19,15 +18,22 @@ class Usuario {
     return await doc.save();
   }
 
+  static async findOne(query) {
+    return await UsuarioModel.findOne(query);
+  }
+
   static async findAll() {
     return await UsuarioModel.find();
   }
+
   static async findById(id) {
     return await UsuarioModel.findById(id);
   }
+
   static async update(id, data) {
     return await UsuarioModel.findByIdAndUpdate(id, data, { new: true });
   }
+
   static async delete(id) {
     return await UsuarioModel.findByIdAndDelete(id);
   }

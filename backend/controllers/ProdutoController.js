@@ -48,44 +48,34 @@ class ProdutoController{
 }
 
     
-   static async updateProduto(req, res) {
-  try {
-    const { id } = req.params;
-    const { cod, nome, preco, tipo, qtd } = req.body;
+  static async updateProduto(req, res) {
+    try {
+      const { id } = req.params; // aqui id vai ser o "cod"
+      const { nome, preco, tipo, qtd } = req.body;
 
-    const produtoExistente = await Produto.findById(id);
-    if (!produtoExistente) {
-      return res.status(404).json({ message: 'Produto não encontrado' });
+      const produtoAtualizado = await Produto.updateByCod(id, { nome, preco, tipo, qtd });
+      if (!produtoAtualizado) {
+        return res.status(404).json({ message: 'Produto não encontrado' });
+      }
+
+      res.json(produtoAtualizado);
+    } catch (error) {
+      console.error('Erro ao atualizar o produto', error);
+      res.status(500).json({ message: 'Erro interno ao atualizar o produto' });
     }
-
-    produtoExistente.cod = cod;
-    produtoExistente.nome = nome;
-    produtoExistente.preco = preco;
-    produtoExistente.tipo = tipo;
-    produtoExistente.qtd = qtd;
-
-    await produtoExistente.save();
-
-    res.json(produtoExistente);
-  } catch (error) {
-    console.error('Erro ao atualizar o produto', error);
-    res.status(500).json({ message: 'Erro interno ao atualizar o produto' });
   }
-}
 
 
 
     static async deleteProduto(req, res) {
   try {
     const { id } = req.params;
-
-    const produtoExistente = await Produto.findById(id);
+    const produtoExistente = await Produto.findByCod(id);
     if (!produtoExistente) {
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
-
-    await Produto.delete(id);
-    res.status(204).send(); // No Content
+    await Produto.deleteByCod(id);
+    res.status(204).send();
   } catch (error) {
     console.error('Erro ao deletar produto:', error);
     res.status(500).json({ message: 'Erro interno ao deletar produto' });

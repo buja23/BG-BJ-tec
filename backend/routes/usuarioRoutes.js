@@ -1,26 +1,15 @@
-// routes/usuarioRoutes.js
 import express from 'express';
 import controle from '../controllers/UsuarioController.js';
 
 const router = express.Router();
 
-// POST   /api/usuarios      → cria um usuário
-router.post('/usuario', controle.create);
+router.post('/', controle.create);
+router.get('/', controle.list);
+router.get('/:id', controle.getById);
+router.put('/:id', controle.update);
+router.delete('/:id', controle.remove);
 
-// GET    /api/usuarios      → lista todos
-router.get('/usuario', controle.list);
-
-// GET    /api/usuarios/:id  → busca por ID
-router.get('/usuario:id', controle.getById);
-
-// PUT    /api/usuarios/:id  → atualiza usuário
-router.put('/usuario:id', controle.update);
-
-// DELETE /api/usuarios/:id  → remove usuário
-router.delete('/usuario:id', controle.remove);
-
-router.get('/cadastrar', (req, res) => {
-    res.render('cadastrarUsuario');
-  });
+// 🚀 Rota de login
+router.post('/', controle.login);
 
 export default router;
