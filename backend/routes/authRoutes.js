@@ -1,10 +1,8 @@
-import express from 'express';
-import { login } from '../controllers/AuthController.js'; // Importa a função de login
+import { Router } from 'express';
+import AuthController from '../controllers/AuthController.js';
 
-const router = express.Router();
+const router = Router();
 
-// Define a rota para o método POST em /login
-// Quando uma requisição chegar aqui, ela chamará a função 'login' do AuthController
-router.post('/login', login);
+router.post('/login', AuthController.login);
 
 export default router;
