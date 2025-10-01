@@ -2,24 +2,32 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const UsuarioContext = createContext();
 
-export const UsuarioProvider = ({ children }) => {
-  const [usuario, setUsuario] = useState(() => {
-    // Tenta recuperar usuário do localStorage
-    const user = localStorage.getItem('usuario');
-    return user ? JSON.parse(user) : null;
-  });
+export function UsuarioProvider({ children }) {
+  const [usuario, setUsuario] = useState(null);
 
-  // Salva usuário no localStorage sempre que mudar
+  // Carregar usuário do localStorage ao iniciar
   useEffect(() => {
-    if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
-    else localStorage.removeItem('usuario');
-  }, [usuario]);
+    const usuarioStorage = localStorage.getItem('usuario');
+    if (usuarioStorage) {
+      setUsuario(JSON.parse(usuarioStorage));
+    }
+  }, []);
+
+  const login = (usuarioData) => {
+    setUsuario(usuarioData);
+    localStorage.setItem('usuario', JSON.stringify(usuarioData));
+  };
+
+  const logout = () => {
+    setUsuario(null);
+    localStorage.removeItem('usuario');
+  };
 
   return (
-    <UsuarioContext.Provider value={{ usuario, setUsuario }}>
+    <UsuarioContext.Provider value={{ usuario, login, logout }}>
       {children}
     </UsuarioContext.Provider>
   );
-};
+}
 
 export const useUsuario = () => useContext(UsuarioContext);

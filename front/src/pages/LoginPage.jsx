@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import { useUsuario } from '../context/UsuarioContext.jsx';
 import '../cadastro.css';
 
 export default function LoginPage() {
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState({ type: '', text: '' });
   const navigate = useNavigate();
+  const { login } = useUsuario(); // pega a função do contexto
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,13 +23,18 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha }),
       });
+
       const data = await response.json();
 
       if (response.ok) {
-        // localStorage.setItem('authToken', data.token);
-        
-        // Redireciona para a nova rota principal do sistema
-        navigate('/app/caixa'); 
+        // Atualiza o contexto global do usuário
+        login(data.usuario);
+
+        // Salva token no localStorage
+        localStorage.setItem('authToken', data.token);
+
+        // Redireciona para a página principal
+        navigate('/app/caixa');
       } else {
         setMensagem({ type: 'erro', text: data.error || 'E-mail ou senha inválidos.' });
       }

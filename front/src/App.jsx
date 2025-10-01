@@ -1,14 +1,16 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { UsuarioProvider } from './context/UsuarioContext.jsx';
+import { CarrinhoProvider } from './context/CarrinhoContext.jsx';
 
-// Importação dos estilos
+// Estilos
 import './index.css';
 import './theme.css';
 
-// Importação das PÁGINAS de autenticação
+// Páginas públicas
 import CadastroPage from './pages/Cadastro.jsx';
-import LoginPage from './pages/Login.jsx';
+import LoginPage from './pages/LoginPage.jsx';
 
-// Importação do LAYOUT PRINCIPAL e das PÁGINAS internas
+// Páginas privadas
 import HomePage from './pages/Home.jsx';
 import CaixaPage from './pages/CaixaPage.jsx';
 import MesasPage from './pages/MesasPage.jsx';
@@ -19,33 +21,43 @@ import EstoquePage from './pages/EstoquePage.jsx';
 import NegocioPage from './pages/NegocioPage.jsx';
 import FinanceiroPage from './pages/FinanceiroPage.jsx';
 import DrePage from './pages/DrePage.jsx';
+import ProdutosPage from './pages/Produtos.jsx';
+
+import PrivateRoute from './components/PrivateRoute.jsx';
 
 export default function App() {
   return (
-    <Routes>
-      {/* ROTA PRINCIPAL: Redireciona a página inicial para /login */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+    <UsuarioProvider>
+      <CarrinhoProvider>
+        <Routes>
+          {/* Redirecionamento raiz */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* ROTAS DE AUTENTICAÇÃO */}
-      <Route path="/cadastro" element={<CadastroPage />} />
-      <Route path="/login" element={<LoginPage />} />
+          {/* Rotas públicas */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/cadastro" element={<CadastroPage />} />
 
-      {/* LAYOUT PRINCIPAL E PÁGINAS INTERNAS */}
-      {/* Todas as páginas do sistema agora vivem dentro de "/app" */}
-      <Route path="/app" element={<HomePage />}>
-        {/* Redireciona /app para /app/caixa */}
-        <Route index element={<Navigate to="/app/caixa" replace />} />
+          {/* Rotas privadas */}
+          <Route path="/app" element={<PrivateRoute />}>
+            <Route path="" element={<HomePage />}>
+              <Route index element={<Navigate to="/app/caixa" replace />} />
+              <Route path="caixa" element={<CaixaPage />} />
+              <Route path="mesas" element={<MesasPage />} />
+              <Route path="deliverys" element={<DeliverysPage />} />
+              <Route path="clientes" element={<ClientesPage />} />
+              <Route path="ranking" element={<RankingPage />} />
+              <Route path="estoque" element={<EstoquePage />} />
+              <Route path="negocio" element={<NegocioPage />} />
+              <Route path="financeiro" element={<FinanceiroPage />} />
+              <Route path="dre" element={<DrePage />} />
+              <Route path="produtos" element={<ProdutosPage />} />
+            </Route>
+          </Route>
 
-        <Route path="caixa" element={<CaixaPage />} />
-        <Route path="mesas" element={<MesasPage />} />
-        <Route path="deliverys" element={<DeliverysPage />} />
-        <Route path="clientes" element={<ClientesPage />} />
-        <Route path="ranking" element={<RankingPage />} />
-        <Route path="estoque" element={<EstoquePage />} />
-        <Route path="negocio" element={<NegocioPage />} />
-        <Route path="financeiro" element={<FinanceiroPage />} />
-        <Route path="dre" element={<DrePage />} />
-      </Route>
-    </Routes>
+          {/* Rota coringa */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </CarrinhoProvider>
+    </UsuarioProvider>
   );
 }
