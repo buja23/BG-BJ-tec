@@ -10,6 +10,7 @@ export default function ProdutosPage() {
   const navigate = useNavigate();
   const [produtos, setProdutos] = useState([]);
   const [carrinho, setCarrinho] = useState([]);
+  const [formaPagamento, setFormaPagamento] = useState('dinheiro');
 
   // Debug user state
   useEffect(() => {
@@ -122,7 +123,27 @@ export default function ProdutosPage() {
         {carrinho.length > 0 && (
           <>
             <Divider />
-            <h3>Total: R$ {total.toFixed(2)}</h3>
+            <div style={{ marginBottom: 16 }}>
+              <h3>Total: R$ {total.toFixed(2)}</h3>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{ marginRight: 8 }}>Forma de Pagamento:</span>
+                <select
+                  value={formaPagamento}
+                  onChange={(e) => setFormaPagamento(e.target.value)}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid #d9d9d9',
+                    marginRight: 16
+                  }}
+                >
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao_credito">Cartão de Crédito</option>
+                  <option value="cartao_debito">Cartão de Débito</option>
+                  <option value="pix">PIX</option>
+                </select>
+              </div>
+            </div>
             <Button type="primary" onClick={async () => {
               try {
                 // Criar o objeto de venda
@@ -139,7 +160,7 @@ export default function ProdutosPage() {
                     },
                     quantidade: item.quantidade
                   })),
-                  formaPagamento: 'dinheiro', // Você pode adicionar um seletor de forma de pagamento se desejar
+                  formaPagamento: formaPagamento,
                   total: total
                 };
 

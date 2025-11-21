@@ -65,40 +65,40 @@ const vendaSchema = new mongoose.Schema({
 });
 
 // Middleware pre-save para calcular subtotais e total
-vendaSchema.pre('save', function(next) {
+vendaSchema.pre('save', function (next) {
   console.log('Calculando subtotais e total da venda...');
   console.log('Dados recebidos:', {
     cliente: this.cliente,
     produtos: this.produtos,
     formaPagamento: this.formaPagamento
   });
-  
+
   if (!Array.isArray(this.produtos)) {
     console.error('Produtos não é um array!');
     throw new Error('Produtos inválidos');
   }
-  
+
   // Garante que os valores são números
   this.produtos.forEach(item => {
     if (!item.produto || !item.produto.preco || !item.quantidade) {
       console.error('Item inválido:', item);
       throw new Error('Item com dados inválidos');
     }
-    
+
     item.produto.preco = Number(item.produto.preco);
     item.quantidade = Number(item.quantidade);
     item.subtotal = item.produto.preco * item.quantidade;
-    
+
     console.log(`Produto: ${item.produto.nome}`);
     console.log(`Preço: ${item.produto.preco}`);
     console.log(`Quantidade: ${item.quantidade}`);
     console.log(`Subtotal: ${item.subtotal}`);
   });
-  
+
   // Calcula total da venda
   this.total = this.produtos.reduce((sum, item) => sum + item.subtotal, 0);
   console.log('Total final da venda:', this.total);
-  
+
   next();
 });
 

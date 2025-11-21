@@ -24,9 +24,6 @@ import vendaRoutes from '../routes/vendaRoutes.js';
 
 
 dotenv.config();
-console.log('Iniciando servidor...');
-console.log('Tentando conectar ao MongoDB...');
-await connectDB();
 
 const app = express();
 let port = process.env.PORT || 3000;
@@ -60,6 +57,9 @@ app.use((err, req, res, next) => {
 
 const startServer = async (retryCount = 0) => {
   try {
+    // 1. Conecte-se ao banco de dados AQUI, depois que tudo foi configurado.
+    await connectDB();
+
     await new Promise((resolve, reject) => {
       const server = app.listen(port, () => {
         console.log(`Servidor rodando na porta ${port}`);

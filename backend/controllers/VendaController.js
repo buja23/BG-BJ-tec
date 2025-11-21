@@ -1,7 +1,9 @@
 import Venda from '../models/VendaSchema.js';
+import Produto from '../models/Produtos.js';
 import mongoose from 'mongoose';
 
 export const createVenda = async (req, res) => {
+  
   try {
     console.log('Recebida requisição para criar venda:', JSON.stringify(req.body, null, 2));
     console.log('Estado da conexão MongoDB:', mongoose.connection.readyState);

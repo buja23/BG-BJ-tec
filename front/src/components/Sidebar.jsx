@@ -28,7 +28,7 @@ const menuItems = [
   { key: '/app/negocio', icon: <ShopOutlined />, label: 'Meu Negócio' },
   { key: '/app/financeiro', icon: <BankOutlined />, label: 'Financeiro' },
   { key: '/app/dre', icon: <PieChartOutlined />, label: 'DRE' },
-  { key: '/app/produtos', icon: <AppstoreOutlined />, label: 'Carrinho' },
+  { key: '/app/produtos', icon: <AppstoreOutlined />, label: 'Venda Direta' },
   { key: '/app/vendas', icon: <ShoppingOutlined />, label: 'Vendas' },
 ];
 
