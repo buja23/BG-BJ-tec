@@ -1,157 +1,121 @@
 // src/pages/MesasPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Empty, Modal, Select, Input } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useMesas } from '../context/MesasContext.jsx';
-import { fetchMesasAbertas, fetchMesasFechadas } from '../services/mesaService';
-import { useProdutos } from '../context/ProdutosContext.jsx';
+import { Card, Button, Spin, message, Typography, Row, Col, Modal, Form, Input, Badge, Statistic, Space } from 'antd';
+import { PlusOutlined, ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { getMesas, abrirMesa } from '../services/mesaService';
+import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
-const { Option } = Select;
+const { Title, Text } = Typography; // Manter a desestruturação aqui é comum, mas vamos corrigir o uso.
 
 const MesasPage = () => {
-  const { abrirMesa, adicionarProduto, fecharMesa } = useMesas();
-  const [mesasAbertas, setMesasAbertas] = useState([]);
-  const [mesasFechadas, setMesasFechadas] = useState([]);
-  // Carregar mesas abertas e fechadas ao montar
-  useEffect(() => {
-    const carregar = async () => {
-      const abertas = await fetchMesasAbertas();
-      const fechadas = await fetchMesasFechadas();
-      setMesasAbertas(abertas);
-      setMesasFechadas(fechadas);
-    };
-    carregar();
-  }, []);
-  const { produtos } = useProdutos();
+  const [form] = Form.useForm();
+  const [mesas, setMesas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [mesaSelecionada, setMesaSelecionada] = useState(null);
-  const [produtoSelecionado, setProdutoSelecionado] = useState({ produtoId: '', qtd: 1 });
+  const navigate = useNavigate();
 
-  const formatarMoeda = (valor) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  const carregarDados = async () => {
+    try {
+      setLoading(true);
+      const mesasData = await getMesas();
+      setMesas(mesasData);
+    } catch (error) {
+      message.error('Erro ao carregar dados.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleAdicionarProduto = async () => {
-    if (!mesaSelecionada || !produtoSelecionado.produtoId) return;
-    const produto = produtos.find(p => p._id === produtoSelecionado.produtoId);
-    await adicionarProduto(mesaSelecionada._id, { 
-      produtoId: produto._id,
-      nome: produto.nome,
-      preco: produto.preco,
-      qtd: produtoSelecionado.qtd
-    });
-    setProdutoSelecionado({ produtoId: '', qtd: 1 });
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
+  const handleCriarMesa = async (values) => {
+    try {
+      await abrirMesa(values.numero);
+      message.success('Nova mesa criada com sucesso!');
+      await carregarDados();
+      setModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Erro ao criar nova mesa.');
+    }
+  };
+
+  const handleMesaClick = (mesa) => {
+    navigate(`/app/mesas/${mesa._id}`);
   };
 
   return (
-    <div>
-      <Card title="Mesas Abertas" extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={async () => {
-          const novaMesaNumero = mesasAbertas.length + mesasFechadas.length + 1;
-          await abrirMesa(novaMesaNumero.toString());
-          // Aguarda e atualiza as listas
-          setTimeout(async () => {
-            setMesasAbertas(await fetchMesasAbertas());
-            setMesasFechadas(await fetchMesasFechadas());
-          }, 300);
-        }}>
-          Nova Mesa
+    <Spin spinning={loading}>
+      <Card title="Controle de Mesas" extra={
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
+          Adicionar Mesa
         </Button>
       }>
-        {mesasAbertas.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-            {mesasAbertas.map(mesa => (
-              <Card
-                key={mesa._id}
-                title={`Mesa ${mesa.mesa}`}
-                style={{ width: 200, cursor: 'pointer' }}
-                actions={[
-                  <EditOutlined key="edit" onClick={() => {
-                    setMesaSelecionada(mesa);
-                    setModalVisible(true);
-                  }} />,
-                  <DeleteOutlined key="delete" onClick={async () => {
-                    await fecharMesa(mesa._id);
-                    setMesasAbertas(await fetchMesasAbertas());
-                    setMesasFechadas(await fetchMesasFechadas());
-                  }} />
-                ]}
-              >
-                <div>Total: {formatarMoeda(mesa.valorTotal)}</div>
-                <div>Status: {mesa.status}</div>
-              </Card>
-            ))}
-          </div>
-        ) : <Empty description="Nenhuma mesa aberta" />}
-      </Card>
-
-      <Card title="Mesas Fechadas" style={{ marginTop: 24 }}>
-        {mesasFechadas.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-            {mesasFechadas.map(mesa => (
-              <Card
-                key={mesa._id}
-                title={`Mesa ${mesa.mesa}`}
-                style={{ width: 200 }}
-              >
-                <div>Total: {formatarMoeda(mesa.valorTotal)}</div>
-                <div>Status: {mesa.status}</div>
-              </Card>
-            ))}
-          </div>
-        ) : <Empty description="Nenhuma mesa fechada" />}
+        <Row gutter={[16, 16]}>
+          {mesas.map(mesa => (
+            <Col key={mesa._id} xs={12} sm={8} md={6} lg={4}>
+              {mesa.status === 'aberta' ? (
+                <Badge.Ribbon text="Em uso" color="blue">
+                  <Card hoverable onClick={() => handleMesaClick(mesa)} bodyStyle={{ padding: '16px', textAlign: 'center' }}>
+                    <Title level={2} style={{ margin: 0 }}>{mesa.numero}</Title>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      <ClockCircleOutlined /> Aberta há {formatDistanceToNow(new Date(mesa.dataAbertura), { locale: ptBR })}
+                    </Text>
+                    <div style={{ marginTop: '12px' }}>
+                      <Statistic 
+                        value={mesa.valorTotal} 
+                        precision={2} 
+                        prefix="R$ " 
+                        valueStyle={{ fontSize: '16px' }}
+                      />
+                    </div>
+                  </Card>
+                </Badge.Ribbon>
+              ) : (
+                <Card 
+                  hoverable 
+                  onClick={() => handleMesaClick(mesa)}
+                  style={{ backgroundColor: '#fafafa' }}
+                >
+                  <div style={{ textAlign: 'center' }}>
+                    <Title level={2} type="secondary" style={{ margin: 0 }}>{mesa.numero}</Title>
+                    <Space direction="vertical" style={{ marginTop: 10, minHeight: 45, justifyContent: 'center' }}>
+                      <Typography.Text type="secondary">
+                        <CheckCircleOutlined style={{ color: 'green', marginRight: 5 }}/>
+                        Disponível
+                      </Typography.Text>
+                    </Space>
+                  </div>
+                </Card>
+              )}
+            </Col>            
+          ))}
+        </Row>
       </Card>
 
       <Modal
-        title={`Mesa ${mesaSelecionada?.mesa}`}
+        title="Adicionar Nova Mesa"
         open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
+        onOk={() => form.submit()}
+        onCancel={() => { setModalVisible(false); form.resetFields(); }}
+        okText="Criar"
+        cancelText="Cancelar"
       >
-        {/* Lista de produtos já adicionados */}
-        {mesaSelecionada?.produtos?.length > 0 ? (
-          <div style={{ marginBottom: 16 }}>
-            <b>Produtos da Mesa:</b>
-            <ul style={{ paddingLeft: 20 }}>
-              {mesaSelecionada.produtos.map((prod, idx) => (
-                <li key={idx}>
-                  {prod.nome} - Qtd: {prod.qtd} - Preço: {formatarMoeda(prod.preco)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : <div style={{ marginBottom: 16 }}>Nenhum produto adicionado.</div>}
-
-        <Select
-          style={{ width: '100%', marginBottom: 10 }}
-          placeholder="Selecione um produto"
-          value={produtoSelecionado.produtoId}
-          onChange={value => setProdutoSelecionado({ ...produtoSelecionado, produtoId: value })}
-        >
-          {produtos.map(prod => (
-            <Option key={prod._id} value={prod._id}>{prod.nome}</Option>
-          ))}
-        </Select>
-
-        <Input
-          type="number"
-          min={1}
-          value={produtoSelecionado.qtd}
-          onChange={e => setProdutoSelecionado({ ...produtoSelecionado, qtd: parseInt(e.target.value) })}
-          style={{ marginBottom: 10 }}
-        />
-
-        <Button type="primary" block onClick={async () => {
-          await handleAdicionarProduto();
-          setMesasAbertas(await fetchMesasAbertas());
-          // Atualiza mesaSelecionada para refletir os produtos novos
-          const atualizada = await fetchMesasAbertas();
-          const mesaAtual = atualizada.find(m => m._id === mesaSelecionada._id);
-          if (mesaAtual) setMesaSelecionada(mesaAtual);
-        }}>
-          Adicionar Produto
-        </Button>
+        <Form form={form} layout="vertical" onFinish={handleCriarMesa}>
+          <Form.Item
+            label="Número da Mesa"
+            name="numero"
+            rules={[{ required: true, message: 'Por favor, insira o número da mesa.' }]}
+          >
+            <Input placeholder="Ex: 01, 15, A5" />
+          </Form.Item>
+        </Form>
       </Modal>
-    </div>
+    </Spin>
   );
 };
 

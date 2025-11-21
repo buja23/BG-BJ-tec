@@ -1,4 +1,4 @@
-import Mesa from '../models/Mesas.js';
+import Mesa from '../models/MesaSchema.js';
 import Cupom from '../models/Cupom.js';
 
 // Aplicar cupom de desconto em uma mesa

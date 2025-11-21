@@ -1,31 +1,31 @@
-// src/services/mesaService.js
+import api from './api';
 
-const API_URL = 'http://localhost:3000/api';
-
-export const fetchMesasAbertas = async () => {
-  const response = await fetch(`${API_URL}/mesas?status=aberta`);
-  return await response.json();
+export const getMesas = async () => {
+  const { data } = await api.get('/mesas');
+  return data;
 };
 
-export const fetchMesasFechadas = async () => {
-  const response = await fetch(`${API_URL}/mesas?status=fechada`);
-  return await response.json();
+export const abrirMesa = async (numeroMesa) => {
+  const { data } = await api.post('/mesas', { numero: numeroMesa });
+  return data;
 };
 
-export const createMesa = async (mesaData) => {
-  const response = await fetch(`${API_URL}/mesas`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(mesaData),
-  });
-  return await response.json();
+export const abrirMesaEspecifica = async (mesaId) => {
+  const { data } = await api.put(`/mesas/${mesaId}/abrir`);
+  return data;
 };
 
-export const closeMesa = async (mesaId) => {
-  const response = await fetch(`${API_URL}/mesas/${mesaId}/close`, {
-    method: 'PUT',
-  });
-  return await response.json();
+export const adicionarProdutoNaMesa = async (mesaId, produtoData) => {
+  const { data } = await api.post(`/mesas/${mesaId}/adicionar`, produtoData);
+  return data;
+};
+
+export const removerProdutoDaMesa = async (mesaId, produtoConsumidoId) => {
+  const { data } = await api.delete(`/mesas/${mesaId}/produtos/${produtoConsumidoId}`);
+  return data;
+};
+
+export const fecharMesa = async (mesaId, dadosFechamento) => {
+  const { data } = await api.post(`/mesas/${mesaId}/fechar`, dadosFechamento);
+  return data;
 };

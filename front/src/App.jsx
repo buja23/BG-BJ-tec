@@ -14,6 +14,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import HomePage from './pages/Home.jsx';
 import CaixaPage from './pages/CaixaPage.jsx';
 import MesasPage from './pages/MesasPage.jsx';
+import MesaDetalhePage from './pages/MesaDetalhePage.jsx';
 import DeliverysPage from './pages/DeliverysPage.jsx';
 import ClientesPage from './pages/ClientesPage.jsx';
 import RankingPage from './pages/RankingPage.jsx';
@@ -44,6 +45,7 @@ export default function App() {
               <Route index element={<Navigate to="/app/caixa" replace />} />
               <Route path="caixa" element={<CaixaPage />} />
               <Route path="mesas" element={<MesasPage />} />
+              <Route path="mesas/:id" element={<MesaDetalhePage />} />
               <Route path="deliverys" element={<DeliverysPage />} />
               <Route path="clientes" element={<ClientesPage />} />
               <Route path="ranking" element={<RankingPage />} />
