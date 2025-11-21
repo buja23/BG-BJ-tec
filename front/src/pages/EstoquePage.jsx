@@ -18,6 +18,21 @@ const EstoquePage = () => {
     carregarProdutos();
   }, []);
 
+  // Efeito para recarregar os produtos quando a aba do navegador fica visível novamente
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Aba de estoque visível, recarregando produtos...');
+        carregarProdutos();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Limpa o evento quando o componente é desmontado
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []); // O array vazio garante que o evento seja adicionado apenas uma vez
+
   const carregarProdutos = async () => {
     try {
       setLoading(true);

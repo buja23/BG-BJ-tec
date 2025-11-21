@@ -3,34 +3,52 @@ import Produto from '../models/Produtos.js';
 import mongoose from 'mongoose';
 
 export const createVenda = async (req, res) => {
-  
   try {
     console.log('Recebida requisição para criar venda:', JSON.stringify(req.body, null, 2));
-    console.log('Estado da conexão MongoDB:', mongoose.connection.readyState);
-    console.log('Collections disponíveis:', await mongoose.connection.db.listCollections().toArray());
-    
     const { cliente, produtos, formaPagamento, observacao } = req.body;
 
     // Validação básica
     if (!cliente || !produtos || !formaPagamento) {
       console.log('Dados incompletos:', { cliente, produtos, formaPagamento });
-      return res.status(400).json({ 
-        message: 'Dados incompletos. Cliente, produtos e forma de pagamento são obrigatórios.' 
+      return res.status(400).json({
+        message: 'Dados incompletos. Cliente, produtos e forma de pagamento são obrigatórios.'
       });
     }
 
     if (!produtos.length) {
-      return res.status(400).json({ 
-        message: 'A venda deve conter pelo menos um produto.' 
+      return res.status(400).json({
+        message: 'A venda deve conter pelo menos um produto.'
       });
     }
 
-    console.log('Criando nova venda com dados:', {
-      cliente,
-      produtos,
-      formaPagamento,
-      observacao
-    });
+    // 2. Processar cada produto DENTRO da transação
+    for (const itemVendido of produtos) {
+      // CORREÇÃO 1: Acessar o ID correto, que está aninhado no objeto
+      const produtoId = itemVendido.produto._id._id || itemVendido.produto._id;
+      const quantidadeVendida = Number(itemVendido.quantidade);
+
+      if (!produtoId) throw new Error('ID do produto inválido recebido.');
+
+      // Encontra o produto no estoque
+      // CORREÇÃO 2: Passar a sessão como uma opção para findById
+      const produtoEmEstoque = await Produto.findById(produtoId);
+
+      if (!produtoEmEstoque) {
+        // Se um produto não for encontrado, aborta a transação
+        throw new Error(`Produto com ID ${produtoId} não encontrado no estoque.`);
+      }
+
+      // Verifica se há estoque suficiente
+      if (produtoEmEstoque.qtd < quantidadeVendida) {
+        throw new Error(`Estoque insuficiente para o produto "${produtoEmEstoque.nome}". Disponível: ${produtoEmEstoque.qtd}, Pedido: ${quantidadeVendida}.`);
+      }
+
+      // Calcula o novo estoque e atualiza o produto
+      produtoEmEstoque.qtd -= quantidadeVendida;
+      await produtoEmEstoque.save();
+
+      console.log(`Estoque do produto "${produtoEmEstoque.nome}" atualizado para: ${produtoEmEstoque.qtd}`);
+    }
 
     // Valida e converte os IDs para ObjectId
     const vendaData = {
@@ -38,41 +56,41 @@ export const createVenda = async (req, res) => {
         _id: new mongoose.Types.ObjectId(cliente._id),
         nome: cliente.nome
       },
-      produtos: produtos.map(p => ({
+      produtos: produtos.map(item => ({
         produto: {
-          _id: new mongoose.Types.ObjectId(p.produto._id),
-          nome: p.produto.nome,
-          preco: Number(p.produto.preco)
+          // CORREÇÃO: Acessar o ID aninhado, assim como foi feito no loop acima
+          _id: new mongoose.Types.ObjectId(item.produto._id._id || item.produto._id),
+          nome: item.produto.nome,
+          preco: Number(item.produto.preco)
         },
-        quantidade: Number(p.quantidade),
-        subtotal: Number(p.produto.preco) * Number(p.quantidade)
+        quantidade: Number(item.quantidade),
+        subtotal: Number(item.produto.preco) * Number(item.quantidade)
       })),
       formaPagamento,
       observacao,
       data: new Date(),
-      total: produtos.reduce((acc, p) => acc + (Number(p.quantidade) * Number(p.produto.preco)), 0),
+      total: produtos.reduce((acc, item) => acc + (Number(item.quantidade) * Number(item.produto.preco)), 0),
       status: 'concluida'
     };
 
-    console.log('Dados formatados para criação:', vendaData);
+    // 3. Cria e salva a venda, ainda dentro da transação
     const venda = new Venda(vendaData);
-
-    console.log('Modelo de venda criado:', venda);
     const vendaSalva = await venda.save();
     console.log('Venda salva com sucesso:', vendaSalva);
+
     res.status(201).json(vendaSalva);
+
   } catch (error) {
     console.error('Erro ao criar venda:', error);
-    res.status(500).json({ message: 'Erro interno ao criar venda' });
+    // Retorna uma mensagem de erro específica
+    res.status(500).json({ message: 'Erro ao criar venda: ' + error.message });
   }
 };
 
 export const getAllVendas = async (req, res) => {
-  console.log('Recebida requisição para listar vendas');
   try {
     const vendas = await Venda.find()
       .sort({ data: -1 }); // Ordena por data, mais recentes primeiro
-    console.log('Vendas encontradas:', vendas.length);
     res.json(vendas);
   } catch (error) {
     console.error('Erro ao buscar vendas:', error);
