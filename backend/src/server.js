@@ -12,6 +12,7 @@ import cupomRoutes from '../routes/cupomRoutes.js';
 import authRoutes from '../routes/authRoutes.js';
 import carrinhoRoutes from '../routes/carrinhoRoutes.js';
 import vendaRoutes from '../routes/vendaRoutes.js';
+import caixaRoutes from '../routes/caixaRoutes.js';
 
 // Importando middlewares diretamente das bibliotecas
 import helmet from 'helmet';
@@ -49,6 +50,7 @@ app.use('/api/usuario', usuarioRoutes);
 app.use('/api/mesas', mesasRoutes);
 app.use('/api/cupons', cupomRoutes);
 app.use('/api/carrinho', carrinhoRoutes);
+app.use('/api/caixa', caixaRoutes);
 app.use('/api', authRoutes); // Rota de autenticação por último
 
 // Adiciona um handler de erros global
@@ -72,6 +74,7 @@ const startServer = async (retryCount = 0) => {
         console.log('- /api/mesas');
         console.log('- /api/cupons');
         console.log('- /api/carrinho');
+        console.log('- /api/caixa');
         resolve();
       });
 
