@@ -1,13 +1,15 @@
 // Produto.js
 import produtoModel from './ProdutoSchema.js';
+import fs from 'fs';
 
 class Produto {
-  constructor({ cod, nome, preco, tipo, qtd }) {
+  constructor({ cod, nome, preco, tipo, qtd, imagemUrl }) {
     this.cod = cod;
     this.nome = nome;
     this.preco = preco;
     this.tipo = tipo;
     this.qtd = qtd;
+    this.imagemUrl = imagemUrl;
   }
 
   async save() {
@@ -16,9 +18,14 @@ class Produto {
       nome: this.nome,
       preco: this.preco,
       tipo: this.tipo,
-      qtd: this.qtd
+      qtd: this.qtd,
+      imagemUrl: this.imagemUrl
     });
     return await novoProduto.save();
+  }
+
+  static async create(data) {
+    return await produtoModel.create(data);
   }
 
   static async findAll() {

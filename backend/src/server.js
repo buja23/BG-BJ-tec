@@ -3,15 +3,6 @@ import cors from 'cors';
 import __dirname from '../utils/pathUtils.js';
 import path from 'path';
 import dotenv from 'dotenv';
-import {
-  staticMiddleware,
-  urlencodedMiddleware,
-  jsonMiddleware,
-  securityMiddleware,
-  compressionMiddleware,
-  ratelimiteMiddleware,
-  morganMiddleware
-} from '../middleware/middlewares.js';
 import connectDB from '../db.js';
 
 import produtoRoutes from '../routes/produtoRoutes.js';
@@ -21,6 +12,11 @@ import cupomRoutes from '../routes/cupomRoutes.js';
 import authRoutes from '../routes/authRoutes.js';
 import carrinhoRoutes from '../routes/carrinhoRoutes.js';
 import vendaRoutes from '../routes/vendaRoutes.js';
+
+// Importando middlewares diretamente das bibliotecas
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
 
 
 dotenv.config();
@@ -32,15 +28,21 @@ console.log(`Servidor configurado para porta ${port}`);
 // 1) Habilita CORS logo no topo:
 app.use(cors());
 
-// 2) Middlewares de parsing e segurança (sem static ainda)
-app.use(securityMiddleware);
-app.use(compressionMiddleware);
-app.use(ratelimiteMiddleware);
-app.use(urlencodedMiddleware);
-app.use(morganMiddleware);
-app.use(jsonMiddleware);
+// 2) Middlewares de segurança e otimização
+app.use(
+  helmet({
+    // Permite que recursos (como imagens) sejam carregados de origens diferentes.
+    // Isso corrige o erro 'net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin'.
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+app.use(compression()); // Comprime as respostas para melhor performance
 
-// 3) Rotas da API em primeiro lugar
+// Servir arquivos estáticos da pasta 'public'
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(morgan('dev')); // Para logs de requisição no console
+
+// 4) Rotas da API
 app.use('/api/vendas', vendaRoutes); // Colocando primeiro para evitar conflitos
 app.use('/api/produtos', produtoRoutes);
 app.use('/api/usuario', usuarioRoutes);
@@ -91,13 +93,3 @@ const startServer = async (retryCount = 0) => {
 };
 
 startServer();
-
-// 4) Só depois, middleware de arquivos estáticos
-app.use(staticMiddleware);
-
-// Se precisar de um catch-all para React Router, algo assim:
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-// });
-
-// Server is started by startServer() above

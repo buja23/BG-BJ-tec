@@ -1,5 +1,7 @@
 import api from './api';
 
+export { api }; // Exporta a instância do api para ser usada em outros lugares
+
 export async function fetchProdutos() {
   try {
     const { data } = await api.get('/produtos');
@@ -11,15 +13,11 @@ export async function fetchProdutos() {
   }
 }
 
-export async function createProduto(produto) {
+export async function createProduto(formData) {
   try {
-    // Gerar código automático
-    const produtos = await fetchProdutos();
-    const cod = (produtos?.length + 1 || 1).toString().padStart(4, '0');
-    const produtoComCod = { ...produto, cod };
-
-    console.log('Enviando produto para criação:', produtoComCod);
-    const { data } = await api.post('/produtos', produtoComCod);
+    // A lógica de gerar o 'cod' foi movida para o backend.
+    // O serviço agora apenas repassa o FormData que recebe.
+    const { data } = await api.post('/produtos', formData);
     console.log('Produto criado:', data);
     return data;
   } catch (error) {
@@ -28,10 +26,11 @@ export async function createProduto(produto) {
   }
 }
 
-export async function updateProduto(id, produto) {
+export async function updateProduto(id, formData) {
   try {
-    console.log(`Atualizando produto ${id}:`, produto);
-    const { data } = await api.put(`/produtos/${id}`, produto);
+    // A função de atualização também deve enviar FormData para suportar o upload de imagens.
+    // O Axios definirá automaticamente o Content-Type como multipart/form-data.
+    const { data } = await api.put(`/produtos/${id}`, formData);
     console.log('Produto atualizado:', data);
     return data;
   } catch (error) {

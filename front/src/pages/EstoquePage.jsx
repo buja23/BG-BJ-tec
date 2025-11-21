@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Modal, Form, Input, Select, Space, message } from 'antd';
-import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Modal, Form, Input, Select, Space, message, Upload, Avatar } from 'antd';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { fetchProdutos, createProduto, updateProduto, deleteProduto } from '../services/produtoService';
+import { SERVER_URL } from '../services/api'; // Importa a URL base do servidor
 
 const { Option } = Select;
-const { confirm } = Modal;
 
 const EstoquePage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [produtos, setProdutos] = useState([]);
   const [editingProduto, setEditingProduto] = useState(null);
+  const [fileList, setFileList] = useState([]);
 
   const [form] = Form.useForm();
 
@@ -51,12 +52,23 @@ const EstoquePage = () => {
 
   const handleEdit = (record) => {
     setEditingProduto(record);
-    form.setFieldsValue({
-      nome: record.nome,
-      preco: record.preco,
-      tipo: record.tipo,
-      qtd: record.qtd
-    });
+    form.setFieldsValue(record);
+
+    // Se o produto tiver uma imagem, prepara o fileList para exibi-la
+    if (record.imagemUrl) {
+      setFileList([
+        {
+          uid: '-1',
+          name: 'imagem_atual.png',
+          status: 'done',
+          url: `http://localhost:3000${record.imagemUrl}`,
+          thumbUrl: `http://localhost:3000${record.imagemUrl}`,
+        },
+      ]);
+    } else {
+      setFileList([]);
+    }
+
     setModalVisible(true);
   };
 
@@ -85,20 +97,33 @@ const EstoquePage = () => {
 
   const handleSubmit = async (values) => {
     try {
-      const produtoData = {
-        ...values,
-        qtd: parseInt(values.qtd),
-        preco: parseFloat(values.preco)
-      };
+      const formData = new FormData();
+      Object.keys(values).forEach(key => {
+        // CORREÇÃO: Ignora o campo 'imagem' ao percorrer os valores do formulário.
+        if (key !== 'imagem' && values[key] !== undefined && values[key] !== null) {
+          formData.append(key, values[key]);
+        }
+      });
+
+      // CORREÇÃO: Pega o arquivo diretamente dos 'values' do formulário.
+      // O 'values.imagem' conterá o array de arquivos graças ao 'getValueFromEvent' no Form.Item.
+      const file = values.imagem && values.imagem[0];
+
+      if (file && file.originFileObj) {
+        // A chave DEVE ser 'imagem', que é o que o multer espera no backend.
+        // O valor DEVE ser o arquivo bruto.
+        console.log('Anexando arquivo ao FormData:', file.originFileObj);
+        formData.append('imagem', file.originFileObj, file.name);
+      }
 
       if (editingProduto) {
         console.log('Atualizando produto:', editingProduto._id);
-        const updatedProduct = await updateProduto(editingProduto._id, produtoData);
+        const updatedProduct = await updateProduto(editingProduto._id, formData);
         console.log('Resposta da atualização:', updatedProduct);
         message.success('Produto atualizado com sucesso!');
       } else {
         console.log('Criando novo produto');
-        const newProduct = await createProduto(produtoData);
+        const newProduct = await createProduto(formData);
         console.log('Resposta da criação:', newProduct);
         message.success('Produto criado com sucesso!');
       }
@@ -106,6 +131,7 @@ const EstoquePage = () => {
       setModalVisible(false);
       form.resetFields();
       setEditingProduto(null);
+      setFileList([]);
       await carregarProdutos();
     } catch (error) {
       message.error('Erro ao salvar produto');
@@ -117,6 +143,14 @@ const EstoquePage = () => {
     setModalVisible(false);
     setEditingProduto(null);
     form.resetFields();
+    setFileList([]);
+  };
+
+  const uploadProps = {
+    onRemove: () => setFileList([]),
+    beforeUpload: file => { setFileList([file]); return false; },
+    fileList,
+    maxCount: 1,
   };
 
   return (
@@ -127,7 +161,10 @@ const EstoquePage = () => {
           <Button 
             type="primary" 
             icon={<PlusOutlined />}
-            onClick={() => setModalVisible(true)}
+            onClick={() => {
+              setEditingProduto(null);
+              setModalVisible(true);
+            }}
           >
             Novo Produto
           </Button>
@@ -137,6 +174,17 @@ const EstoquePage = () => {
           loading={loading}
           columns={[
             { title: 'Código', dataIndex: 'cod', key: 'cod' },
+            {
+              title: 'Imagem',
+              dataIndex: 'imagemUrl',
+              key: 'imagem',
+              render: (imagemUrl) => (
+                <Avatar 
+                  shape="square" 
+                  size={48}
+                  src={imagemUrl ? `${SERVER_URL}${imagemUrl}` : undefined} />
+              ),
+            },
             { title: 'Produto', dataIndex: 'nome', key: 'nome' },
             { 
               title: 'Categoria', 
@@ -188,6 +236,16 @@ const EstoquePage = () => {
         cancelText="Cancelar"
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          {/* O campo 'cod' não é mais necessário no formulário, 
+              pois o backend irá gerá-lo automaticamente.
+              Isso evita que o usuário insira dados inválidos ou duplicados.
+          <Form.Item 
+            label="Código" 
+            name="cod" 
+            rules={[{ required: true, message: 'Por favor, insira o código do produto' }]}
+          >
+            <Input />
+          </Form.Item> */}
           <Form.Item 
             label="Nome" 
             name="nome" 
@@ -213,6 +271,19 @@ const EstoquePage = () => {
               <Option value="sobremesa">Sobremesa</Option>
               <Option value="porcao">Porção</Option>
             </Select>
+          </Form.Item>
+          <Form.Item
+            label="Imagem do Produto" 
+            name="imagem"
+            // Extrai a lista de arquivos do evento de upload
+            valuePropName="fileList"
+            getValueFromEvent={(e) => Array.isArray(e) ? e : e && e.fileList}
+          >
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />}>
+                {fileList.length > 0 ? 'Trocar Imagem' : 'Selecionar Imagem'}
+              </Button>
+            </Upload>
           </Form.Item>
           <Form.Item 
             label="Quantidade" 

@@ -5,7 +5,10 @@ const router = express.Router();
 
 // Rota base: /api/vendas
 console.log('Rotas de venda carregadas');
-router.post('/criar', createVenda);
+
+// Aplica o middleware de parsing de JSON APENAS para as rotas de venda
+router.post('/criar', express.json(), createVenda);
+
 router.get('/', getAllVendas);
 router.get('/periodo', getVendasByPeriod);
 router.get('/usuario/:usuarioId', getVendasByUser);

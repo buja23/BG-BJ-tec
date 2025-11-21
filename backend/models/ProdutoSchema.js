@@ -6,7 +6,8 @@ const produtoSchema = new mongoose.Schema({
   nome: { type: String, required: true },
   preco: { type: Number, required: true },
   tipo: { type: String, required: true },
-  qtd: { type: Number, required: true }
+  qtd: { type: Number, required: true },
+  imagemUrl: { type: String, required: false }
 });
 
 const produtoModel = mongoose.model('Produto', produtoSchema);
