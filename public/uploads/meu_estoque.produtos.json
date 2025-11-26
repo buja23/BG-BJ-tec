@@ -1,0 +1,169 @@
+[{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce44"
+  },
+  "nome": "lanche",
+  "preco": 15,
+  "tipo": "lanche",
+  "qtd": 50,
+  "custo": 11,
+  "imagemUrl": "/uploads/imagem-1764181329260-648736910.jfif",
+  "cod": "D3CE44",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce60"
+  },
+  "nome": "Porção de Batata com Cheddar e Bacon",
+  "preco": 32,
+  "tipo": "porção",
+  "qtd": 40,
+  "custo": 12,
+  "imagemUrl": "/uploads/imagem-1764181583602-893850633.jfif",
+  "cod": "BAR001",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce61"
+  },
+  "nome": "Cerveja Heineken 600ml",
+  "preco": 18,
+  "tipo": "bebida",
+  "qtd": 118,
+  "custo": 8.5,
+  "imagemUrl": "/uploads/imagem-1764181632111-120084820.jfif",
+  "cod": "BAR002",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce62"
+  },
+  "nome": "Isca de Frango Empanado",
+  "preco": 35,
+  "tipo": "porção",
+  "qtd": 30,
+  "custo": 11,
+  "imagemUrl": "/uploads/imagem-1764181668662-721393365.jfif",
+  "cod": "BAR003",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce63"
+  },
+  "nome": "Caipirinha de Limão Clássica",
+  "preco": 22,
+  "tipo": "bebida",
+  "qtd": 200,
+  "custo": 4.5,
+  "imagemUrl": "/uploads/imagem-1764181698908-251017320.jfif",
+  "cod": "BAR004",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce64"
+  },
+  "nome": "Buraco Quente (Pão com Carne Moída)",
+  "preco": 18,
+  "tipo": "lanche",
+  "qtd": 25,
+  "custo": 6.5,
+  "imagemUrl": "/uploads/imagem-1764181727743-252131429.jfif",
+  "cod": "BAR005",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce65"
+  },
+  "nome": "Tábua de Frios (Salame, Queijo e Azeitona)",
+  "preco": 45,
+  "tipo": "porção",
+  "qtd": 15,
+  "custo": 22,
+  "imagemUrl": "/uploads/imagem-1764181776383-907514800.jfif",
+  "cod": "BAR006",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce66"
+  },
+  "nome": "Hambúrguer Artesanal da Casa",
+  "preco": 28.9,
+  "tipo": "lanche",
+  "qtd": 50,
+  "custo": 13,
+  "imagemUrl": "/uploads/imagem-1764181835295-769868544.jfif",
+  "cod": "BAR007",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce67"
+  },
+  "nome": "Mini Churros com Doce de Leite (10un)",
+  "preco": 20,
+  "tipo": "sobremesa",
+  "qtd": 20,
+  "custo": 5,
+  "imagemUrl": "/uploads/imagem-1764181859318-897490476.jfif",
+  "cod": "BAR008",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce68"
+  },
+  "nome": "Refrigerante Lata 350ml",
+  "preco": 6,
+  "tipo": "bebida",
+  "qtd": 100,
+  "custo": 2.5,
+  "imagemUrl": "/uploads/imagem-1764181911557-270116615.jfif",
+  "cod": "BAR009",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce69"
+  },
+  "nome": "Petit Gâteau com Sorvete",
+  "preco": 24,
+  "tipo": "sobremesa",
+  "qtd": 15,
+  "custo": 8,
+  "imagemUrl": "/uploads/petit-gateau.png",
+  "cod": "BAR010",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce70"
+  },
+  "nome": "Pastelzinho de Carne (12 unidades)",
+  "preco": 28,
+  "tipo": "porção",
+  "qtd": 45,
+  "custo": 7,
+  "imagemUrl": "/uploads/porcao-pastel.png",
+  "cod": "BAR011",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69274551bfec8bb8b1d3ce71"
+  },
+  "nome": "Sanduíche de Pernil Desfiado",
+  "preco": 22,
+  "tipo": "lanche",
+  "qtd": 30,
+  "custo": 8.5,
+  "imagemUrl": "/uploads/sanduiche-pernil.png",
+  "cod": "BAR012",
+  "__v": 0
+}]
