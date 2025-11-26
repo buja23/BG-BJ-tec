@@ -36,10 +36,10 @@ export const createProduto = async (req, res, next) => {
         console.log('Arquivo recebido (req.file):', req.file);
         console.log('---------------------------------');
 
-        const { nome, preco, tipo, qtd } = req.body;
+        const { nome, preco, tipo, qtd, custo } = req.body; // 1. Extrair o 'custo'
 
-        if (!nome || !preco || !tipo || !qtd) {
-            return res.status(400).json({ message: 'Todos os campos (nome, preco, tipo, qtd) são obrigatórios.' });
+        if (!nome || !preco || !tipo || !qtd || !custo) { // 2. Adicionar 'custo' à validação
+            return res.status(400).json({ message: 'Todos os campos (nome, preco, tipo, qtd, custo) são obrigatórios.' });
         }
 
         // Constrói a URL da imagem se um arquivo foi enviado
@@ -53,7 +53,8 @@ export const createProduto = async (req, res, next) => {
             preco: parseFloat(preco),
             tipo,
             qtd: parseInt(qtd, 10),
-            imagemUrl
+            custo: parseFloat(custo), // 3. Adicionar 'custo' ao objeto de dados
+            imagemUrl,
         };
         
         // 1. Cria uma nova instância do modelo, mas ainda não salva no banco.

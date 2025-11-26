@@ -1,43 +1,62 @@
-import Cupom from '../models/Cupom.js';
+import Cupom from '../models/CupomSchema.js';
 
-const CupomController = {
-  async listarCupons(req, res) {
-    const cupons = await Cupom.find();
-    res.json(cupons);
-  },
-  async criarCupom(req, res) {
-    try {
-      const cupom = await Cupom.create(req.body);
-      res.status(201).json(cupom);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  },
-  async atualizarCupom(req, res) {
-    try {
-      const { id } = req.params;
-      const cupom = await Cupom.findByIdAndUpdate(id, req.body, { new: true });
-      res.json(cupom);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  },
-  async removerCupom(req, res) {
-    try {
-      const { id } = req.params;
-      await Cupom.findByIdAndDelete(id);
-      res.json({ success: true });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  },
-  async validarCupom(req, res) {
-    const { codigo } = req.body;
-    const cupom = await Cupom.findOne({ codigo, ativo: true });
-    if (!cupom) return res.status(404).json({ error: 'Cupom não encontrado ou inativo.' });
-    if (cupom.validade && new Date() > cupom.validade) return res.status(400).json({ error: 'Cupom expirado.' });
-    res.json(cupom);
+// Criar um novo cupom
+export const createCupom = async (req, res, next) => {
+  try {
+    const novoCupom = new Cupom(req.body);
+    await novoCupom.save();
+    res.status(201).json(novoCupom);
+  } catch (error) {
+    next(error);
   }
 };
 
-export default CupomController;
+// Obter todos os cupons
+export const getCupons = async (req, res, next) => {
+  try {
+    const cupons = await Cupom.find().sort({ createdAt: -1 });
+    res.status(200).json(cupons);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Atualizar um cupom
+export const updateCupom = async (req, res, next) => {
+  try {
+    const cupom = await Cupom.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!cupom) return res.status(404).json({ message: 'Cupom não encontrado.' });
+    res.status(200).json(cupom);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Deletar um cupom
+export const deleteCupom = async (req, res, next) => {
+  try {
+    const cupom = await Cupom.findByIdAndDelete(req.params.id);
+    if (!cupom) return res.status(404).json({ message: 'Cupom não encontrado.' });
+    res.status(200).json({ message: 'Cupom deletado com sucesso.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Validar um cupom para uso
+export const validarCupom = async (req, res, next) => {
+  try {
+    const { codigo } = req.body;
+    const cupom = await Cupom.findOne({ codigo: codigo.toUpperCase() });
+
+    if (!cupom) return res.status(404).json({ message: 'Cupom inválido.' });
+    if (!cupom.ativo) return res.status(400).json({ message: 'Este cupom não está mais ativo.' });
+    if (cupom.dataExpiracao && cupom.dataExpiracao < new Date()) {
+      return res.status(400).json({ message: 'Cupom expirado.' });
+    }
+
+    res.status(200).json(cupom);
+  } catch (error) {
+    next(error);
+  }
+};

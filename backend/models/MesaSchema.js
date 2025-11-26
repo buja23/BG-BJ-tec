@@ -13,7 +13,11 @@ const mesaSchema = new mongoose.Schema({
   produtos: [produtoConsumidoSchema],
   valorTotal: { type: Number, default: 0 },
   dataAbertura: { type: Date },
+  cliente: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Cliente', // Referência ao modelo 'Cliente' para permitir o populate
+    default: null
+  }
 }, { timestamps: true });
 
-const MesaModel = mongoose.model('Mesa', mesaSchema);
-export default MesaModel;
+export default mongoose.model('Mesa', mesaSchema);

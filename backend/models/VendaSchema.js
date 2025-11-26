@@ -59,7 +59,15 @@ const vendaSchema = new mongoose.Schema({
     enum: ['pendente', 'concluida', 'cancelada'],
     default: 'pendente'
   },
-  observacao: String
+  observacao: String,
+  cupomAplicado: {
+    codigo: String,
+    valorDesconto: Number,
+  },
+  custoTotal: { // Custo total dos produtos vendidos
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true // Adiciona createdAt e updatedAt
 });

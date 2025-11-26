@@ -5,7 +5,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import __dirname from '../utils/pathUtils.js';
-import { getAllProdutos, getProdutoById, createProduto, updateProduto, deleteProduto } from "../controllers/ProdutoController.js";
+import { getAllProdutos, getProdutoById, createProduto, updateProduto, deleteProduto } from "../controllers/produtoController.js";
+import { protect, authorize } from '../middleware/authMiddleware.js'; // Importa o novo middleware
 
 const router = express.Router();
 
@@ -27,10 +28,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Rota base será /api/produtos
-router.get('/', getAllProdutos);
-router.get('/:id', getProdutoById);
-router.post('/', upload.single('imagem'), createProduto);
-router.put('/:id', upload.single('imagem'), updateProduto);
-router.delete('/:id', deleteProduto);
+router.get('/', protect, getAllProdutos); // Todos os funcionários logados podem ver
+router.get('/:id', protect, getProdutoById); // Todos os funcionários logados podem ver
+router.post('/', protect, authorize('gerente'), upload.single('imagem'), createProduto); // Apenas gerente pode criar
+router.put('/:id', protect, authorize('gerente'), upload.single('imagem'), updateProduto); // Apenas gerente pode atualizar
+router.delete('/:id', protect, authorize('gerente'), deleteProduto); // Apenas gerente pode deletar
 
 export default router;

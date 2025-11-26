@@ -66,7 +66,8 @@ class UsuarioController {
     try {
       const { email, senha } = req.body;
 
-      const user = await UsuarioModel.findOne({ email });
+      // CORREÇÃO: Adiciona .select('+senha') para forçar a inclusão da senha na busca
+      const user = await UsuarioModel.findOne({ email }).select('+senha');
       if (!user) {
         return res.status(400).json({ error: 'Usuário não encontrado' });
       }
@@ -78,14 +79,14 @@ class UsuarioController {
 
       const token = jwt.sign(
         { id: user._id, cargo: user.cargo },
-        'seu_segredo_aqui', // troque por variável de ambiente
-        { expiresIn: '1h' }
+        process.env.JWT_SECRET, // CORREÇÃO: Usa a mesma chave secreta do middleware
+        { expiresIn: '8h' } // Aumentado o tempo de expiração para 8 horas
       );
 
       res.json({
         message: 'Login realizado com sucesso',
         token,
-        usuario: {
+        user: { // CORREÇÃO: Alterado de 'usuario' para 'user' para corresponder ao frontend
           id: user._id,
           nome: user.nome,
           email: user.email,

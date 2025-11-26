@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useUsuario } from '../context/UsuarioContext'; // Importa o contexto do usuário
 import { Layout, Menu } from 'antd';
 import {
   CalculatorOutlined,
@@ -13,28 +14,60 @@ import {
   PieChartOutlined,
   LogoutOutlined,
   ShoppingOutlined,
+  TagOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
 
-// Itens do menu atualizados com o prefixo "/app"
-const menuItems = [
-  { key: '/app/caixa', icon: <CalculatorOutlined />, label: 'Caixa' },
-  { key: '/app/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
-  { key: '/app/deliverys', icon: <RocketOutlined />, label: 'Entregas' },
-  { key: '/app/clientes', icon: <UserOutlined />, label: 'Clientes' },
-  { key: '/app/ranking', icon: <TrophyOutlined />, label: 'Ranking' },
-  { key: '/app/estoque', icon: <BoxPlotOutlined />, label: 'Estoque' },
-  { key: '/app/negocio', icon: <ShopOutlined />, label: 'Meu Negócio' },
-  { key: '/app/financeiro', icon: <BankOutlined />, label: 'Financeiro' },
-  { key: '/app/dre', icon: <PieChartOutlined />, label: 'DRE' },
-  { key: '/app/produtos', icon: <AppstoreOutlined />, label: 'Venda Direta' },
-  { key: '/app/vendas', icon: <ShoppingOutlined />, label: 'Vendas' },
-];
-
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { usuario } = useUsuario(); // Pega o usuário do contexto
+
+  // Define os itens de menu para cada CARGO
+  const gerenteItems = [
+    { key: '/app/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
+    { key: '/app/produtos', icon: <ShoppingOutlined />, label: 'Venda Direta' },
+    { key: '/app/vendas', icon: <ShoppingOutlined />, label: 'Vendas' },
+    { key: '/app/estoque', icon: <BoxPlotOutlined />, label: 'Estoque' },
+    { key: '/app/clientes', icon: <UserOutlined />, label: 'Clientes' },
+    { key: '/app/cupons', icon: <TagOutlined />, label: 'Cupons' },
+    { key: '/app/financeiro', icon: <BankOutlined />, label: 'Financeiro' },
+    { key: '/app/dre', icon: <PieChartOutlined />, label: 'DRE' },
+  ];
+
+  const caixaItems = [
+    { key: '/app/caixa', icon: <CalculatorOutlined />, label: 'Caixa' },
+    { key: '/app/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
+    { key: '/app/estoque', icon: <BoxPlotOutlined />, label: 'Estoque' },
+    { key: '/app/clientes', icon: <UserOutlined />, label: 'Clientes' },
+    { key: '/app/cupons', icon: <TagOutlined />, label: 'Cupons' },
+    { key: '/app/vendas', icon: <ShoppingOutlined />, label: 'Vendas' },
+  ];
+
+  const garcomItems = [
+    { key: '/app/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
+    { key: '/app/produtos', icon: <ShoppingOutlined />, label: 'Venda Direta' },
+    { key: '/app/clientes', icon: <UserOutlined />, label: 'Clientes' },
+    { key: '/app/estoque', icon: <BoxPlotOutlined />, label: 'Ver Estoque' },
+  ];
+
+  // Função para determinar qual menu exibir
+  const getMenuItems = () => {
+    switch (usuario?.cargo) {
+      case 'gerente':
+        return gerenteItems;
+      case 'caixa':
+        return caixaItems;
+      case 'garcom':
+        return garcomItems;
+      // Adicione outros cargos como 'caixa' aqui, se necessário
+      default:
+        return []; // Retorna um menu vazio por padrão ou para clientes
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   const handleLogout = () => {
     console.log("Usuário deslogado!");

@@ -1,15 +1,19 @@
 import express from 'express';
-import { getMesas, abrirMesa, adicionarProduto, fecharMesa, abrirMesaEspecifica, removerProduto } from '../controllers/MesaController.js';
+import { getMesas, abrirMesa, adicionarProduto, fecharMesa, abrirMesaEspecifica, removerProduto, vincularCliente, desvincularCliente } from '../controllers/MesaController.js';
+import { protect } from '../middleware/authMiddleware.js'; // 1. Importar o middleware de proteção
 
 const router = express.Router();
 
-router.use(express.json());
+// 2. Aplicar o 'protect' em todas as rotas para garantir que apenas usuários logados possam acessá-las.
+router.get('/', protect, getMesas);
+router.post('/', protect, abrirMesa);
+router.post('/:mesaId/abrir', protect, abrirMesaEspecifica);
+router.post('/:mesaId/adicionar', protect, adicionarProduto);
+router.delete('/:mesaId/produtos/:produtoConsumidoId', protect, removerProduto);
+router.post('/:mesaId/fechar', protect, fecharMesa);
 
-router.get('/', getMesas);
-router.post('/', abrirMesa); // Rota padrão POST para criar/reutilizar uma mesa
-router.put('/:mesaId/abrir', abrirMesaEspecifica); // Nova rota para abrir uma mesa específica
-router.post('/:mesaId/adicionar', adicionarProduto);
-router.delete('/:mesaId/produtos/:produtoConsumidoId', removerProduto); // Nova rota para remover produto
-router.post('/:mesaId/fechar', fecharMesa);
+// Rotas para vincular e desvincular clientes
+router.post('/:mesaId/vincular-cliente', protect, vincularCliente); // 3. Padronizado para POST
+router.post('/:mesaId/desvincular-cliente', protect, desvincularCliente);
 
 export default router;

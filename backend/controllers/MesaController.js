@@ -6,7 +6,10 @@ import mongoose from 'mongoose';
 // Retorna todas as mesas
 export const getMesas = async (req, res, next) => {
   try {
-    const mesas = await Mesa.find().sort({ numero: 1 });
+    // Adicionamos .populate('cliente') para trazer os dados do cliente vinculado
+    const mesas = await Mesa.find()
+      .populate('cliente', 'nome') // Popula o campo 'cliente' e seleciona apenas o campo 'nome'
+      .sort({ numero: 1 });
     res.json(mesas);
   } catch (error) {
     next(error);
@@ -40,10 +43,25 @@ export const abrirMesa = async (req, res, next) => {
 export const abrirMesaEspecifica = async (req, res, next) => {
   try {
     const { mesaId } = req.params;
+    const { clienteId } = req.body; // Recebe o ID do cliente opcionalmente
+
     const mesa = await Mesa.findById(mesaId);
 
     if (!mesa) {
       return res.status(404).json({ message: 'Mesa não encontrada.' });
+    }
+
+    // VERIFICAÇÃO: Garante que um cliente não pode ocupar duas mesas abertas.
+    if (clienteId) {
+      const mesaJaOcupada = await Mesa.findOne({ cliente: clienteId, status: 'aberta' });
+      if (mesaJaOcupada) {
+        return res.status(400).json({ message: `Este cliente já está com a mesa ${mesaJaOcupada.numero} aberta.` });
+      }
+    }
+
+    // AQUI É ONDE O VÍNCULO ACONTECE EFETIVAMENTE
+    if (clienteId) {
+      mesa.cliente = clienteId; // Vincula o cliente à mesa
     }
 
     mesa.status = 'aberta';
@@ -61,13 +79,24 @@ export const adicionarProduto = async (req, res, next) => {
     const { mesaId } = req.params;
     const { produtoId, quantidade } = req.body;
 
-    const mesa = await Mesa.findById(mesaId);
     const produto = await Produto.findById(produtoId);
-
-    if (!mesa || !produto) {
-      return res.status(404).json({ message: 'Mesa ou produto não encontrado.' });
+    if (!produto) {
+      throw new Error('Produto não encontrado.');
+    }
+    if (produto.qtd < quantidade) {
+      throw new Error('Estoque insuficiente para este produto.');
     }
 
+    produto.qtd -= quantidade;
+    await produto.save();
+
+    const mesa = await Mesa.findById(mesaId);
+    if (!mesa || mesa.status === 'fechada') {
+      throw new Error('Mesa não encontrada ou está fechada.');
+    }
+
+    // Lógica alterada: Sempre adiciona um novo item, sem agrupar.
+    // A quantidade vinda do frontend é sempre 1 por clique.
     mesa.produtos.push({
       produto: produto._id,
       quantidade: quantidade,
@@ -75,11 +104,10 @@ export const adicionarProduto = async (req, res, next) => {
       nomeProduto: produto.nome
     });
 
-    // Recalcula o total
     mesa.valorTotal = mesa.produtos.reduce((acc, item) => acc + (item.precoUnitario * item.quantidade), 0);
-    
-    const mesaAtualizada = await mesa.save();
-    res.json(mesaAtualizada);
+    await mesa.save();
+
+    res.status(200).json(mesa);
   } catch (error) {
     next(error);
   }
@@ -92,20 +120,21 @@ export const removerProduto = async (req, res, next) => {
 
     const mesa = await Mesa.findById(mesaId);
     if (!mesa) {
-      return res.status(404).json({ message: 'Mesa não encontrada.' });
+      throw new Error('Mesa não encontrada.');
     }
 
-    // Usa o operador $pull do MongoDB para remover o subdocumento pelo seu _id
-    mesa.produtos.pull({ _id: produtoConsumidoId });
+    const itemIndex = mesa.produtos.findIndex(p => p._id.toString() === produtoConsumidoId);
+    if (itemIndex === -1) {
+      throw new Error('Item não encontrado na comanda.');
+    }
 
-    // Recalcula o valor total
+    const [itemRemovido] = mesa.produtos.splice(itemIndex, 1);
+    await Produto.findByIdAndUpdate(itemRemovido.produto, { $inc: { qtd: itemRemovido.quantidade } });
+
     mesa.valorTotal = mesa.produtos.reduce((acc, item) => acc + (item.precoUnitario * item.quantidade), 0);
-
-    const mesaAtualizada = await mesa.save();
-    res.json(mesaAtualizada);
-
+    await mesa.save();
+    res.status(200).json(mesa);
   } catch (error) {
-    console.error('Erro ao remover produto da mesa:', error);
     next(error);
   }
 };
@@ -114,31 +143,44 @@ export const removerProduto = async (req, res, next) => {
 export const fecharMesa = async (req, res, next) => {
   try {
     const { mesaId } = req.params;
-    const { formaPagamento, cliente } = req.body;
+    const { formaPagamento, totalComDesconto, cupomAplicado } = req.body;
 
-    const mesa = await Mesa.findById(mesaId);
+    // CORREÇÃO: Popula tanto o cliente quanto os produtos dentro da comanda.
+    const mesa = await Mesa.findById(mesaId).populate('cliente').populate('produtos.produto');
+
     if (!mesa || mesa.status === 'fechada') {
       return res.status(404).json({ message: 'Mesa não encontrada ou já está fechada.' });
     }
 
-    // CORREÇÃO: Garante que o cliente genérico tenha um _id.
-    // Se nenhum cliente for passado no corpo da requisição, cria um cliente genérico para a venda.
-    const clienteDaVenda = cliente || {
-      _id: new mongoose.Types.ObjectId(), // Gera um novo ID de objeto válido
-      nome: `Mesa ${mesa.numero}`
+    // Se a mesa tiver um cliente vinculado, usa os dados dele.
+    // Senão, cria um cliente genérico para a venda.
+    const clienteDaVenda = mesa.cliente ? {
+      _id: mesa.cliente._id,
+      nome: mesa.cliente.nome
+    } : {
+      _id: new mongoose.Types.ObjectId(),
+      nome: `Avulso - Mesa ${mesa.numero}`
     };
+
+    // Calcula o custo total dos produtos vendidos na mesa
+    const custoTotal = mesa.produtos.reduce((acc, item) => {
+      // CORREÇÃO: Garante que, se um produto não tiver custo, ele seja tratado como 0.
+      return acc + ((item.produto?.custo || 0) * item.quantidade);
+    }, 0);
 
     // 1. Cria a Venda
     const vendaData = {
       cliente: clienteDaVenda,
       produtos: mesa.produtos.map(p => ({
-        produto: { _id: p.produto, nome: p.nomeProduto, preco: p.precoUnitario },
+        produto: { _id: p.produto._id, nome: p.nomeProduto, preco: p.precoUnitario, custo: p.produto.custo },
         quantidade: p.quantidade,
         subtotal: p.precoUnitario * p.quantidade
       })),
       formaPagamento: formaPagamento || 'dinheiro',
-      total: mesa.valorTotal,
-      status: 'concluida'
+      total: totalComDesconto ?? mesa.valorTotal, // Usa o total com desconto se fornecido
+      status: 'concluida',
+      cupomAplicado: cupomAplicado || null,
+      custoTotal: custoTotal // Salva o custo total na venda
     };
     await Venda.create(vendaData);
 
@@ -147,10 +189,61 @@ export const fecharMesa = async (req, res, next) => {
     mesa.produtos = [];
     mesa.valorTotal = 0;
     mesa.dataAbertura = null;
+    mesa.cliente = null; // Desvincula o cliente da mesa
 
     const mesaFechada = await mesa.save();
     res.json(mesaFechada);
   } catch (error) {
+    next(error);
+  }
+};
+
+// Vincula um cliente a uma mesa já aberta
+export const vincularCliente = async (req, res, next) => {
+  try {
+    const { mesaId } = req.params;
+    const { clienteId } = req.body;
+
+    if (!clienteId) {
+      return res.status(400).json({ message: 'O ID do cliente é obrigatório.' });
+    }
+
+    // CORREÇÃO: Garante que o cliente não está em outra mesa aberta
+    const mesaJaOcupada = await Mesa.findOne({ cliente: clienteId, status: 'aberta' });
+    if (mesaJaOcupada) {
+      return res.status(400).json({ message: `Este cliente já está com a mesa ${mesaJaOcupada.numero} aberta.` });
+    }
+
+    // Popula o cliente na resposta para que o frontend atualize corretamente
+    const mesa = await Mesa.findByIdAndUpdate(mesaId, { cliente: clienteId }, { new: true })
+      .populate('cliente', 'nome');
+    if (!mesa) return res.status(404).json({ message: 'Mesa não encontrada.' });
+
+    res.status(200).json(mesa);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Desvincula um cliente de uma mesa
+export const desvincularCliente = async (req, res, next) => {
+  try {
+    console.log('2. [BACKEND] Rota desvincularCliente alcançada.');
+    const { mesaId } = req.params;
+    console.log('[BACKEND] ID da Mesa recebido:', mesaId);
+
+    const mesa = await Mesa.findById(mesaId);
+    if (!mesa) return res.status(404).json({ message: 'Mesa não encontrada.' });
+
+    // Define o campo cliente como nulo e salva
+    mesa.cliente = null; 
+    const mesaAtualizada = await mesa.save();
+    console.log('[BACKEND] Mesa atualizada no DB. Enviando de volta:', mesaAtualizada);
+
+    // Retorna a mesa atualizada. O campo 'cliente' agora é nulo.
+    res.status(200).json(mesaAtualizada);
+  } catch (error) {
+    console.error('ERRO no backend ao desvincular:', error);
     next(error);
   }
 };

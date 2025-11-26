@@ -26,6 +26,7 @@ import ProdutosPage from './pages/ProdutosPage.jsx';
 import VendasPage from './pages/VendasPage.jsx';
 
 import PrivateRoute from './components/PrivateRoute.jsx';
+import CuponsPage from './pages/CuponsPage.jsx';
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
               <Route path="dre" element={<DrePage />} />
               <Route path="produtos" element={<ProdutosPage />} />
               <Route path="vendas" element={<VendasPage />} />
+              <Route path="cupons" element={<CuponsPage/>} />
             </Route>
           </Route>
 

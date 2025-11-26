@@ -3,6 +3,10 @@ import cors from 'cors';
 import __dirname from '../utils/pathUtils.js';
 import path from 'path';
 import dotenv from 'dotenv';
+
+// CORREÇÃO: Carrega as variáveis de ambiente no início de tudo.
+dotenv.config();
+
 import connectDB from '../db.js';
 
 import produtoRoutes from '../routes/produtoRoutes.js';
@@ -13,14 +17,16 @@ import authRoutes from '../routes/authRoutes.js';
 import carrinhoRoutes from '../routes/carrinhoRoutes.js';
 import vendaRoutes from '../routes/vendaRoutes.js';
 import caixaRoutes from '../routes/caixaRoutes.js';
+import clienteRoutes from '../routes/clienteRoutes.js'; // 1. Importar as rotas de cliente
+import financeiroRoutes from '../routes/financeiroRoutes.js'; // Importa a nova rota
+import dreRoutes from '../routes/dreRoutes.js';
+import relatorioRoutes from '../routes/relatorioRoutes.js';
+import pagamentoRoutes from '../routes/pagamentoRoutes.js';
 
 // Importando middlewares diretamente das bibliotecas
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-
-
-dotenv.config();
 
 const app = express();
 let port = process.env.PORT || 3000;
@@ -43,6 +49,9 @@ app.use(compression()); // Comprime as respostas para melhor performance
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(morgan('dev')); // Para logs de requisição no console
 
+// Middleware para parsear JSON - ESSENCIAL para receber dados do frontend
+app.use(express.json());
+
 // 4) Rotas da API
 app.use('/api/vendas', vendaRoutes); // Colocando primeiro para evitar conflitos
 app.use('/api/produtos', produtoRoutes);
@@ -51,7 +60,12 @@ app.use('/api/mesas', mesasRoutes);
 app.use('/api/cupons', cupomRoutes);
 app.use('/api/carrinho', carrinhoRoutes);
 app.use('/api/caixa', caixaRoutes);
-app.use('/api', authRoutes); // Rota de autenticação por último
+app.use('/api/clientes', clienteRoutes); // 2. Usar as rotas de cliente
+app.use('/api/financeiro', financeiroRoutes); // Usa a nova rota
+app.use('/api/dre', dreRoutes);
+app.use('/api/relatorios', relatorioRoutes);
+app.use('/api/pagamentos', pagamentoRoutes);
+app.use('/api/auth', authRoutes); // CORREÇÃO: Rota de autenticação agora tem um prefixo claro.
 
 // Adiciona um handler de erros global
 app.use((err, req, res, next) => {
@@ -75,6 +89,11 @@ const startServer = async (retryCount = 0) => {
         console.log('- /api/cupons');
         console.log('- /api/carrinho');
         console.log('- /api/caixa');
+        console.log('- /api/clientes');
+        console.log('- /api/financeiro');
+        console.log('- /api/dre');
+        console.log('- /api/relatorios');
+        console.log('- /api/pagamentos');
         resolve();
       });
 

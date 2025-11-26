@@ -18,30 +18,12 @@ export default function LoginPage() {
     setMensagem({ type: '', text: '' });
 
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('Login response:', data);
-        // Atualiza o contexto global do usuário
-        login(data.usuario);
-
-        // Salva token no localStorage
-        localStorage.setItem('authToken', data.token);
-
-        // Redireciona para a página principal
-        navigate('/app/caixa');
-      } else {
-        setMensagem({ type: 'erro', text: data.error || 'E-mail ou senha inválidos.' });
-      }
+      // Passa a função de navegação para o contexto, que cuidará do redirecionamento
+      await login(email, senha, navigate);
     } catch (error) {
       console.error('Falha na requisição:', error);
-      setMensagem({ type: 'erro', text: 'Não foi possível conectar ao servidor.' });
+      const errorMsg = error.response?.data?.message || 'E-mail ou senha inválidos.';
+      setMensagem({ type: 'erro', text: errorMsg });
     } finally {
       setLoading(false);
     }

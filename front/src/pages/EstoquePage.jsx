@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Modal, Form, Input, Select, Space, message, Upload, Avatar } from 'antd';
+import { Card, Table, Button, Modal, Form, Input, Select, Space, message, Upload, Avatar, InputNumber } from 'antd';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { fetchProdutos, createProduto, updateProduto, deleteProduto } from '../services/produtoService';
+import { useUsuario } from '../context/UsuarioContext'; // Importa o contexto do usuário
 import { SERVER_URL } from '../services/api'; // Importa a URL base do servidor
 
 const { Option } = Select;
@@ -12,6 +13,7 @@ const EstoquePage = () => {
   const [produtos, setProdutos] = useState([]);
   const [editingProduto, setEditingProduto] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const { usuario } = useUsuario(); // Pega o usuário logado do contexto
 
   const [form] = Form.useForm();
 
@@ -100,8 +102,14 @@ const EstoquePage = () => {
       const formData = new FormData();
       Object.keys(values).forEach(key => {
         // CORREÇÃO: Ignora o campo 'imagem' ao percorrer os valores do formulário.
-        if (key !== 'imagem' && values[key] !== undefined && values[key] !== null) {
-          formData.append(key, values[key]);
+        const value = values[key];
+        if (key !== 'imagem' && value !== undefined && value !== null) {
+          // Garante que os valores numéricos sejam convertidos para string antes de enviar
+          if (typeof value === 'number') {
+            formData.append(key, String(value));
+          } else {
+            formData.append(key, value);
+          }
         }
       });
 
@@ -153,6 +161,9 @@ const EstoquePage = () => {
     maxCount: 1,
   };
 
+  // Define se o usuário tem permissão para gerenciar o estoque
+  const podeGerenciarEstoque = usuario?.cargo === 'gerente';
+
   return (
     <div>
       <Card 
@@ -161,10 +172,9 @@ const EstoquePage = () => {
           <Button 
             type="primary" 
             icon={<PlusOutlined />}
-            onClick={() => {
-              setEditingProduto(null);
-              setModalVisible(true);
-            }}
+            onClick={() => { setEditingProduto(null); setModalVisible(true); }}
+            // Esconde o botão se não tiver permissão
+            style={{ display: podeGerenciarEstoque ? 'inline-block' : 'none' }}
           >
             Novo Produto
           </Button>
@@ -200,25 +210,35 @@ const EstoquePage = () => {
               render: val => `R$ ${val.toFixed(2)}` 
             },
             { 
+              title: 'Custo', 
+              dataIndex: 'custo', 
+              key: 'custo', 
+              render: val => `R$ ${val ? val.toFixed(2) : '0.00'}` 
+            },
+            { 
               title: 'Ações', 
               key: 'actions', 
               render: (_, record) => (
                 <Space size="middle">
-                  <Button 
-                    type="primary" 
-                    size="small"
-                    onClick={() => handleEdit(record)}
-                  >
-                    Editar
-                  </Button>
-                  <Button 
-                    type="primary" 
-                    danger 
-                    size="small"
-                    onClick={() => handleDelete(record)}
-                  >
-                    Excluir
-                  </Button>
+                  {podeGerenciarEstoque && (
+                    <>
+                      <Button 
+                        type="primary" 
+                        size="small"
+                        onClick={() => handleEdit(record)}
+                      >
+                        Editar
+                      </Button>
+                      <Button 
+                        type="primary" 
+                        danger 
+                        size="small"
+                        onClick={() => handleDelete(record)}
+                      >
+                        Excluir
+                      </Button>
+                    </>
+                  )}
                 </Space>
               )
             },
@@ -236,16 +256,6 @@ const EstoquePage = () => {
         cancelText="Cancelar"
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          {/* O campo 'cod' não é mais necessário no formulário, 
-              pois o backend irá gerá-lo automaticamente.
-              Isso evita que o usuário insira dados inválidos ou duplicados.
-          <Form.Item 
-            label="Código" 
-            name="cod" 
-            rules={[{ required: true, message: 'Por favor, insira o código do produto' }]}
-          >
-            <Input />
-          </Form.Item> */}
           <Form.Item 
             label="Nome" 
             name="nome" 
@@ -259,6 +269,15 @@ const EstoquePage = () => {
             rules={[{ required: true, message: 'Por favor, insira o preço' }]}
           >
             <Input type="number" step="0.01" prefix="R$" />
+          </Form.Item>
+          <Form.Item 
+            label="Custo" 
+            name="custo" 
+            rules={[{ required: true, message: 'Por favor, insira o custo do produto' }]}
+          >
+            <InputNumber 
+              style={{ width: '100%' }} 
+              prefix="R$" step="0.01" precision={2} />
           </Form.Item>
           <Form.Item 
             label="Tipo" 
