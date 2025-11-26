@@ -36,44 +36,46 @@ export default function CadastroForm() {
   };
 
   return (
-    <div className="card">
-      <h2>Cadastrar Usuário</h2>
-      <form onSubmit={handleCadastro}>
-        <input
-          type="text"
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="E-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          required
-        />
-        <select value={cargo} onChange={(e) => setCargo(e.target.value)}>
-          <option value="garcom">Garçom</option>
-          <option value="caixa">Caixa</option>
-          <option value="gerente">Gerente</option>
-        </select>
-        <button type="submit">Cadastrar</button>
-      </form>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <div className="card">
+        <h2>Cadastrar Usuário</h2>
+        <form onSubmit={handleCadastro}>
+          <input
+            type="text"
+            placeholder="Nome"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="E-mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            required
+          />
+          <select value={cargo} onChange={(e) => setCargo(e.target.value)}>
+            <option value="garcom">Garçom</option>
+            <option value="caixa">Caixa</option>
+            <option value="gerente">Gerente</option>
+          </select>
+          <button type="submit">Cadastrar</button>
+        </form>
 
-      {mensagem && <p>{mensagem}</p>}
+        {mensagem && <p>{mensagem}</p>}
 
      
-      <p>
-        Já tem Cadastro? <Link to="/Login">Faça o Login!</Link>
-      </p>
+        <p>
+          Já tem Cadastro? <Link to="/Login">Faça o Login!</Link>
+        </p>
+      </div>
     </div>
   );
 }
