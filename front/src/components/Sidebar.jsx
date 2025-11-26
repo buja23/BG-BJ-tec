@@ -39,6 +39,7 @@ export default function Sidebar() {
   const caixaItems = [
     { key: '/app/caixa', icon: <CalculatorOutlined />, label: 'Caixa' },
     { key: '/app/mesas', icon: <AppstoreOutlined />, label: 'Mesas' },
+    { key: '/app/produtos', icon: <ShoppingOutlined />, label: 'Venda Direta' },
     { key: '/app/estoque', icon: <BoxPlotOutlined />, label: 'Estoque' },
     { key: '/app/clientes', icon: <UserOutlined />, label: 'Clientes' },
     { key: '/app/cupons', icon: <TagOutlined />, label: 'Cupons' },
